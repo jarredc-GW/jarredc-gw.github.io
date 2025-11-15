@@ -88,13 +88,13 @@
         #home-plate { bottom: 5%; left: 42.5%; }
         #home-plate .base-label { bottom: -25px; } /* Home label is lower */
         
-        #first-base { bottom: 42.5%; right: 7.5%; } /* Moved inward */
+        #first-base { bottom: 42.5%; right: 18.75%; } /* Moved slightly outward */
         #first-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
 
-        #second-base { top: 7.5%; left: 42.5%; } /* Moved inward */
+        #second-base { top: 7.5%; left: 42.5%; } /* Moved further up */
         #second-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
 
-        #third-base { bottom: 42.5%; left: 7.5%; } /* Moved inward */
+        #third-base { bottom: 42.5%; left: 18.75%; } /* Moved slightly outward */
         #third-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
         /* --- END NEW BASE POSITIONS --- */
 
@@ -313,10 +313,9 @@
                 
                 <!-- Scoreboard (Left part of top-right) -->
                 <div class="w-full md:w-1/2 bg-white rounded-lg shadow-xl p-4">
-                    <h2 class="text-xl font-bold text-center text-gray-800 mb-3">Scoreboard</h2>
-                    
+                    <!-- Scoreboard header removed -->
                     <!-- Scores -->
-                    <div class="grid grid-cols-3 gap-2 mb-3 text-center items-center">
+                    <div class="grid grid-cols-3 gap-2 mb-3 text-center items-center mt-2"> <!-- Added mt-2 for spacing -->
                         <div>
                             <div id="home-label" class="text-md font-semibold text-blue-700">HOME</div>
                             <div id="home-score" class="text-4xl font-bold text-blue-700">0</div>
