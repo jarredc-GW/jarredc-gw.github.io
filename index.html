@@ -146,8 +146,8 @@
                 <button id="team-home" class="w-full text-lg font-medium py-4 px-6 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors">
                     Home Team
                 </button>
-                <button id="team-guest" class="w-full text-lg font-medium py-4 px-6 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                    Guest Team
+                <button id="team-away" class="w-full text-lg font-medium py-4 px-6 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                    Away Team
                 </button>
             </div>
         </div>
@@ -308,67 +308,69 @@
                 
                 <!-- Scoreboard (Left part of top-right) -->
                 <div class="w-full md:w-1/2 bg-white rounded-lg shadow-xl p-4">
-                    <h2 class="text-xl font-bold text-center text-gray-800 mb-2">Scoreboard</h2>
+                    <h2 class="text-xl font-bold text-center text-gray-800 mb-3">Scoreboard</h2>
                     
                     <!-- Scores -->
-                    <div class="grid grid-cols-2 gap-4 mb-3 text-center">
+                    <div class="grid grid-cols-3 gap-2 mb-3 text-center items-center">
                         <div>
                             <div id="home-label" class="text-md font-semibold text-blue-700">HOME</div>
                             <div id="home-score" class="text-4xl font-bold text-blue-700">0</div>
                         </div>
+                        <!-- Inning -->
+                        <div id="inning-toggle" class="cursor-pointer" title="Click to toggle Top/Bottom">
+                            <div class="text-xs font-medium text-gray-500">INNING</div>
+                            <div class="flex items-center space-x-1 justify-center">
+                                <div id="inning" class="text-2xl font-semibold">1</div>
+                                <span id="inning-indicator" class="text-3xl font-bold text-gray-700">&uarr;</span>
+                            </div>
+                        </div>
                         <div>
-                            <div id="guest-label" class="text-md font-semibold text-gray-500">GUEST</div>
-                            <div id="guest-score" class="text-4xl font-bold text-gray-700">0</div>
+                            <div id="away-label" class="text-md font-semibold text-gray-500">AWAY</div>
+                            <div id="away-score" class="text-4xl font-bold text-gray-700">0</div>
                         </div>
                     </div>
                     
                     <!-- Counters -->
-                    <div class="flex justify-around items-start p-3 bg-gray-100 rounded-lg">
-                        <!-- Col 1: Inning & Runs -->
-                        <div class="text-center space-y-2">
-                            <!-- Inning -->
-                            <div id="inning-toggle" class="cursor-pointer" title="Click to toggle Top/Bottom">
-                                <div class="text-xs font-medium text-gray-500">INNING</div>
-                                <div class="flex items-center space-x-1 justify-center">
-                                    <div id="inning" class="text-xl font-semibold">1</div>
-                                    <span id="inning-indicator" class="text-2xl font-bold text-gray-700">&uarr;</span>
+                    <div class="p-3 bg-gray-100 rounded-lg">
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Balls & Strikes -->
+                            <div class="space-y-2">
+                                <!-- Balls -->
+                                <div>
+                                    <div class="text-xs font-medium text-gray-500">BALLS</div>
+                                    <div class="flex space-x-1 justify-start mt-1">
+                                        <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
+                                        <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
+                                        <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
+                                        <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
+                                    </div>
+                                </div>
+                                <!-- Strikes -->
+                                <div>
+                                    <div class="text-xs font-medium text-gray-500">STRIKES</div>
+                                    <div class="flex space-x-1 justify-start mt-1">
+                                        <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
+                                        <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
+                                        <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
+                                    </div>
                                 </div>
                             </div>
-                            <!-- Runs this Inning -->
-                            <div>
-                                <div class="text-xs font-medium text-gray-500">RUNS</div>
-                                <div id="runs-this-inning" class="text-xl font-semibold text-green-600">0</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Col 2: Balls, Strikes, Outs -->
-                        <div class="text-center space-y-2">
-                            <!-- Balls -->
-                            <div>
-                                <div class="text-xs font-medium text-gray-500">BALLS</div>
-                                <div class="flex space-x-1 justify-center mt-1">
-                                    <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
-                                    <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
-                                    <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
-                                    <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
+                            
+                            <!-- Outs & Runs -->
+                            <div class="space-y-2">
+                                <!-- Outs -->
+                                <div>
+                                    <div class="text-xs font-medium text-gray-500">OUTS</div>
+                                    <div class="flex space-x-1 justify-start mt-1">
+                                        <span class="out w-4 h-4 bg-gray-300 rounded-full cursor-pointer"></span>
+                                        <span class="out w-4 h-4 bg-gray-300 rounded-full cursor-pointer"></span>
+                                        <span class="out w-4 h-4 bg-gray-300 rounded-full cursor-pointer"></span>
+                                    </div>
                                 </div>
-                            </div>
-                            <!-- Strikes -->
-                            <div>
-                                <div class="text-xs font-medium text-gray-500">STRIKES</div>
-                                <div class="flex space-x-1 justify-center mt-1">
-                                    <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
-                                    <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
-                                    <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
-                                </div>
-                            </div>
-                            <!-- Outs -->
-                            <div>
-                                <div class="text-xs font-medium text-gray-500">OUTS</div>
-                                <div class="flex space-x-1 justify-center mt-1">
-                                    <span classclass="out w-4 h-4 bg-gray-300 rounded-full cursor-pointer"></span>
-                                    <span class="out w-4 h-4 bg-gray-300 rounded-full cursor-pointer"></span>
-                                    <span class="out w-4 h-4 bg-gray-300 rounded-full cursor-pointer"></span>
+                                <!-- Runs this Inning -->
+                                <div>
+                                    <div class="text-xs font-medium text-gray-500">RUNS</div>
+                                    <div id="runs-this-inning" class="text-xl font-semibold text-green-600 text-left">0</div>
                                 </div>
                             </div>
                         </div>
@@ -499,7 +501,7 @@
         // --- App State ---
         let gameState = {
             homeScore: 0,
-            guestScore: 0,
+            awayScore: 0,
             inning: 1,
             topOfInning: true,
             balls: 1, // Start with 1-1 count
@@ -524,7 +526,7 @@
                 female: 0
             },
             gameMode: null, // 'traditional' or 'wheel'
-            userTeam: null, // 'home' or 'guest'
+            userTeam: null, // 'home' or 'away'
             nextToBat: null, // 'male' or 'female' for 'wheel' mode
             rosterMinimized: false,
         };
@@ -536,9 +538,9 @@
         // --- DOM Elements ---
         const DOMElements = {
             homeScore: document.getElementById('home-score'),
-            guestScore: document.getElementById('guest-score'),
+            awayScore: document.getElementById('away-score'),
             homeLabel: document.getElementById('home-label'),
-            guestLabel: document.getElementById('guest-label'),
+            awayLabel: document.getElementById('away-label'),
             inning: document.getElementById('inning'),
             inningIndicator: document.getElementById('inning-indicator'),
             inningToggle: document.getElementById('inning-toggle'),
@@ -589,7 +591,7 @@
             startMaleBtn: document.getElementById('start-male'),
             startFemaleBtn: document.getElementById('start-female'),
             teamHomeBtn: document.getElementById('team-home'),
-            teamGuestBtn: document.getElementById('team-guest'),
+            teamAwayBtn: document.getElementById('team-away'),
             runnerScoresYesBtn: document.getElementById('runner-scores-yes'),
             runnerScoresNoBtn: document.getElementById('runner-scores-no'),
             btnRunnerScored: document.getElementById('btn-runner-scored'),
@@ -604,17 +606,17 @@
         
         function updateScoreboard() {
             DOMElements.homeScore.textContent = gameState.homeScore;
-            DOMElements.guestScore.textContent = gameState.guestScore;
+            DOMElements.awayScore.textContent = gameState.awayScore;
             DOMElements.inning.textContent = gameState.inning;
             DOMElements.runsThisInning.textContent = gameState.runsThisInning;
             DOMElements.inningIndicator.innerHTML = gameState.topOfInning ? '&uarr;' : '&darr;';
-            DOMElements.inningIndicator.className = `text-2xl font-bold ${gameState.topOfInning ? 'text-gray-700' : 'text-blue-700'}`;
+            DOMElements.inningIndicator.className = `text-3xl font-bold ${gameState.topOfInning ? 'text-gray-700' : 'text-blue-700'}`;
             
             // Highlight user's team label
             DOMElements.homeLabel.classList.toggle('ring-2', gameState.userTeam === 'home');
             DOMElements.homeLabel.classList.toggle('ring-yellow-400', gameState.userTeam === 'home');
-            DOMElements.guestLabel.classList.toggle('ring-2', gameState.userTeam === 'guest');
-            DOMElements.guestLabel.classList.toggle('ring-yellow-400', gameState.userTeam === 'guest');
+            DOMElements.awayLabel.classList.toggle('ring-2', gameState.userTeam === 'away');
+            DOMElements.awayLabel.classList.toggle('ring-yellow-400', gameState.userTeam === 'away');
 
 
             updateCounter(DOMElements.balls, gameState.balls, 'bg-yellow-400');
@@ -706,7 +708,7 @@
 
             gameState.runsThisInning += numRuns;
             if (gameState.topOfInning) {
-                gameState.guestScore += numRuns;
+                gameState.awayScore += numRuns;
             } else {
                 gameState.homeScore += numRuns;
             }
@@ -716,7 +718,7 @@
                 // Reached run limit, advance inning
                 const overage = gameState.runsThisInning - RUN_LIMIT;
                 if (gameState.topOfInning) {
-                    gameState.guestScore -= overage;
+                    gameState.awayScore -= overage;
                 } else {
                     gameState.homeScore -= overage;
                 }
@@ -768,8 +770,8 @@
         }
 
         function getBatterName(batter) {
-            // If it's not the user's team at bat, return "Guest".
-            if (!isUserTeamAtBat()) return "Guest";
+            // If it's not the user's team at bat, return "Away".
+            if (!isUserTeamAtBat()) return "Away";
             // Otherwise, use the batter's name
             return batter ? batter.name.split(' ')[0] : "Batter";
         }
@@ -1124,7 +1126,7 @@
         }
 
         function handleUserTeamSelect(e) {
-            gameState.userTeam = e.currentTarget.id === 'team-home' ? 'home' : 'guest';
+            gameState.userTeam = e.currentTarget.id === 'team-home' ? 'home' : 'away';
             DOMElements.userTeamModal.classList.add('hidden');
             DOMElements.modalOverlay.classList.add('hidden'); // Close modal
             
@@ -1552,7 +1554,7 @@
             DOMElements.startMaleBtn.addEventListener('click', handleWhoBatsFirst);
             DOMElements.startFemaleBtn.addEventListener('click', handleWhoBatsFirst);
             DOMElements.teamHomeBtn.addEventListener('click', handleUserTeamSelect);
-            DOMElements.teamGuestBtn.addEventListener('click', handleUserTeamSelect);
+            DOMElements.teamAwayBtn.addEventListener('click', handleUserTeamSelect);
             
             // Hit Type Modal Listeners
             DOMElements.hitTypeButtons.forEach(btn => {
@@ -1644,8 +1646,6 @@
                     }, 500); // Short delay to see 3 strikes
                 }
             });
-            
-            // --- BUG FIX: Removed lines that broke ball/strike UI ---
             
             // We'll leave the 'out' listener for manual setting
             DOMElements.outs.forEach((out, i) => {
