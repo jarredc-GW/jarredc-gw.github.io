@@ -106,7 +106,7 @@
         }
 
         /* Roster Toggle Transition */
-        #roster-toggle-content {
+        #roster-toggle-content, #game-log-toggle-content {
             transition: all 0.3s ease-in-out;
             overflow: hidden;
         }
@@ -300,6 +300,20 @@
                 </div>
 
             </div>
+
+            <!-- Game Log Section -->
+            <div class="mt-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xl font-bold text-gray-800">Game Log</h2>
+                    <button id="game-log-toggle-btn" class="px-3 py-1 text-lg font-bold bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">+</button>
+                </div>
+                <div id="game-log-toggle-content" class="overflow-hidden" style="max-height: 0px; opacity: 0; margin-top: 0px;">
+                    <div id="game-log-list" class="bg-gray-100 p-3 rounded-lg min-h-[100px] max-h-[200px] shadow-inner space-y-2 overflow-y-auto text-sm">
+                        <!-- Log entries will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+
             <p class="text-xs text-gray-400 mt-2 text-center">Your User ID (for data sync): <span id="user-id" class="font-mono">loading...</span></p>
 
         </div>
@@ -536,6 +550,8 @@
             userTeam: null, // 'home' or 'away'
             nextToBat: null, // 'male' or 'female' for 'wheel' mode
             rosterMinimized: false,
+            gameLogMinimized: true, // Start with log minimized
+            gameLog: [], // Store log entries
         };
         const RUN_LIMIT = 6;
         const RUN_LIMIT_INNING = 5;
@@ -607,8 +623,46 @@
             userIdDisplay: document.getElementById('user-id'),
             rosterToggleBtn: document.getElementById('roster-toggle-btn'),
             rosterToggleContent: document.getElementById('roster-toggle-content'),
+            gameLogToggleBtn: document.getElementById('game-log-toggle-btn'),
+            gameLogToggleContent: document.getElementById('game-log-toggle-content'),
+            gameLogList: document.getElementById('game-log-list'),
         };
         
+        // --- Game Log Functions ---
+        function addLogEntry(message, type = 'info') {
+            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const entry = { time, message, type };
+            gameState.gameLog.unshift(entry); // Add to beginning of array
+            
+            // Render new log entry
+            const logEl = document.createElement('div');
+            logEl.className = 'p-2 rounded bg-white shadow-sm';
+            
+            let colorClass = 'text-gray-700';
+            if (type === 'run') colorClass = 'text-green-600 font-medium';
+            if (type === 'out') colorClass = 'text-red-600 font-medium';
+            if (type === 'inning') colorClass = 'text-blue-600 font-bold';
+
+            logEl.innerHTML = `<span class="font-mono text-xs text-gray-500">[${time}]</span> <span class="${colorClass}">${message}</span>`;
+            
+            DOMElements.gameLogList.prepend(logEl); // Add to top of list
+        }
+
+        function handleGameLogToggle() {
+            gameState.gameLogMinimized = !gameState.gameLogMinimized;
+            if (gameState.gameLogMinimized) {
+                DOMElements.gameLogToggleContent.style.maxHeight = '0px';
+                DOMElements.gameLogToggleContent.style.opacity = '0';
+                DOMElements.gameLogToggleContent.style.marginTop = '0';
+                DOMElements.gameLogToggleBtn.textContent = '+';
+            } else {
+                DOMElements.gameLogToggleContent.style.maxHeight = '200px'; // Set to max-height
+                DOMElements.gameLogToggleContent.style.opacity = '1';
+                DOMElements.gameLogToggleContent.style.marginTop = ''; // Revert to default
+                DOMElements.gameLogToggleBtn.textContent = '-';
+            }
+        }
+
         // --- UI Update Functions ---
         
         function updateScoreboard() {
@@ -675,6 +729,9 @@
         }
 
         function advanceHalfInning() {
+            const currentTeam = gameState.topOfInning ? 'Away' : 'Home';
+            addLogEntry(`--- ${currentTeam} team 3 outs. ---`, 'inning');
+            
             gameState.outs = 0;
             gameState.runsThisInning = 0;
             gameState.runnerInningCounter = 0; // Reset for new half-inning
@@ -682,10 +739,12 @@
             if (gameState.topOfInning) {
                 // Top of inning ends, switch to bottom
                 gameState.topOfInning = false;
+                addLogEntry(`Start Bottom of Inning ${gameState.inning}.`, 'inning');
             } else {
                 // Bottom of inning ends, switch to next inning
                 gameState.topOfInning = true;
                 gameState.inning++;
+                addLogEntry(`Start Top of Inning ${gameState.inning}.`, 'inning');
             }
             clearBases();
             resetCounts();
@@ -697,22 +756,29 @@
          * Adds an out to the game state.
          * @returns {boolean} Returns true if this was the 3rd out, false otherwise.
          */
-        function addOut() {
+        function addOut(logMessage = 'Out recorded.') {
             let isThirdOut = false; // Flag
             if (gameState.outs < 2) {
                 gameState.outs++;
+                addLogEntry(logMessage, 'out');
                 updateScoreboard();
             } else {
                 // 3rd out, end the half-inning
+                addLogEntry(logMessage, 'out');
                 isThirdOut = true; // Set flag
-                advanceHalfInning();
+                updateScoreboard(); // Show 3 outs briefly
+                setTimeout(() => {
+                    advanceHalfInning();
+                }, 500);
             }
             return isThirdOut; // Return if it was the 3rd out
         }
 
-        function addRuns(numRuns) {
+        function addRuns(numRuns, batterName = 'Runner') {
             if (numRuns <= 0) return;
 
+            addLogEntry(`${batterName} scores! (+${numRuns} run${numRuns > 1 ? 's' : ''})`, 'run');
+            
             gameState.runsThisInning += numRuns;
             if (gameState.topOfInning) {
                 gameState.awayScore += numRuns;
@@ -724,10 +790,13 @@
             if (gameState.inning <= RUN_LIMIT_INNING && gameState.runsThisInning >= RUN_LIMIT) {
                 // Reached run limit, advance inning
                 const overage = gameState.runsThisInning - RUN_LIMIT;
-                if (gameState.topOfInning) {
-                    gameState.awayScore -= overage;
-                } else {
-                    gameState.homeScore -= overage;
+                if (overage > 0) {
+                    if (gameState.topOfInning) {
+                        gameState.awayScore -= overage;
+                    } else {
+                        gameState.homeScore -= overage;
+                    }
+                    addLogEntry(`Run limit of ${RUN_LIMIT} reached. (-${overage} run${overage > 1 ? 's' : ''})`, 'info');
                 }
                 gameState.runsThisInning = RUN_LIMIT;
                 
@@ -806,14 +875,20 @@
         }
         
         function advanceRunnersOnWalk(batter) {
+            const batterName = getBatterName(batter);
+            addLogEntry(`${batterName} walks.`, 'info');
+            
             const newRunner = createNewRunner(batter);
             let runsScored = 0;
+            let scoredRunnerName = 'Runner';
+            
             // Check gender *only* if it's the user's team
             const isMale = isUserTeamAtBat() && batter && batter.gender === 'male';
 
             // --- Standard Walk Logic (Force runners) ---
             if (gameState.bases[1] && gameState.bases[2] && gameState.bases[3]) { // Bases loaded
                 runsScored++; // Runner from 3rd scores
+                scoredRunnerName = gameState.bases[3].name;
                 gameState.bases[3] = gameState.bases[2];
                 gameState.bases[2] = gameState.bases[1];
                 gameState.bases[1] = newRunner;
@@ -830,12 +905,14 @@
             
             // --- Co-Ed Male Walk Rule: Advance to 2nd (if they are on 1st) ---
             if (isMale && gameState.bases[1] === newRunner) {
+                addLogEntry(`Male walk rule: ${batterName} advances to 2nd.`, 'info');
                 // Batter is on 1st, advance them to 2nd (no force)
                 if (gameState.bases[2]) {
                     // 2nd is occupied, advance 2nd to 3rd (no force)
                     if (gameState.bases[3]) {
                         // 3rd is occupied, advance 3rd home (no force)
                         runsScored++;
+                        scoredRunnerName = gameState.bases[3].name;
                     }
                     gameState.bases[3] = gameState.bases[2];
                 }
@@ -844,7 +921,7 @@
             }
 
             if (runsScored > 0) {
-                addRuns(runsScored);
+                addRuns(runsScored, scoredRunnerName);
             }
             updateBases();
         }
@@ -882,13 +959,19 @@
         }
 
         function finishHitAdvance(batter, hitType, runnerOn2Scores) {
+            const batterName = getBatterName(batter);
+            const hitNames = ['Single', 'Double', 'Triple', 'Home Run'];
+            addLogEntry(`${batterName} hits a ${hitNames[hitType - 1]}!`, 'info');
+
             const newRunner = createNewRunner(batter);
             let runsScored = 0;
+            const scoredRunners = [];
             const newBaseState = { 1: null, 2: null, 3: null };
 
             // 1. Place the batter
             if (hitType === 4) { // Home Run
                 runsScored++;
+                scoredRunners.push(newRunner.name);
             } else {
                 newBaseState[hitType] = newRunner;
             }
@@ -898,6 +981,7 @@
             // Runner on 3rd
             if (gameState.bases[3]) {
                 runsScored++;
+                scoredRunners.push(gameState.bases[3].name);
             }
             
             // Runner on 2nd
@@ -905,24 +989,20 @@
                 if (hitType === 1) { // Single
                     if (runnerOn2Scores === true) {
                         runsScored++;
+                        scoredRunners.push(gameState.bases[2].name);
                     } else { // runnerOn2Scores === false
                         newBaseState[3] = gameState.bases[2]; // Hold at 3rd
                     }
                 } else { // Double or Triple
                     runsScored++;
+                    scoredRunners.push(gameState.bases[2].name);
                 }
             }
             
             // Runner on 1st
             if (gameState.bases[1]) {
                 if (hitType === 1) { // Single
-                    // R1 goes to 2nd. If 2nd is taken (by batter) or 3rd (by R2), advance
                     if (newBaseState[2]) {
-                         // 2nd is occupied. If 3rd is also occupied (by R2 holding), R1 is out.
-                         // But in our logic, R2 is either scoring or holding 3rd.
-                         // If R2 held at 3rd, R1 must stop at 2nd. This is complex.
-                         // Let's assume R1 goes to 2nd.
-                         // If R2 held 3rd, newBaseState[3] is set. R1 goes to 2nd.
                          newBaseState[2] = gameState.bases[1];
                     } else if (newBaseState[3]) { // R2 held 3rd
                         newBaseState[2] = gameState.bases[1];
@@ -932,19 +1012,23 @@
                     }
                 } else if (hitType === 2) { // Double
                     // R1 goes to 3rd. (Batter is on 2)
-                    newBaseState[3] = gameState.bases[1];
+                    if(newBaseState[3]) { // 3rd is occupied by R2
+                        runsScored++; // R1 scores
+                        scoredRunners.push(gameState.bases[1].name);
+                    } else {
+                        newBaseState[3] = gameState.bases[1];
+                    }
                 } else { // Triple or HR
                     runsScored++;
+                    scoredRunners.push(gameState.bases[1].name);
                 }
             }
             
-            // --- BUG FIX for Double-counting runs ---
-            // The previous logic was flawed. This is simpler.
-            // We just set the new state.
             gameState.bases = newBaseState;
 
             if (runsScored > 0) {
-                addRuns(runsScored);
+                // Log runs one by one
+                scoredRunners.forEach(name => addRuns(1, name));
             }
             updateBases();
         }
@@ -1003,10 +1087,13 @@
             DOMElements.battingOrderListFemale.innerHTML = '';
 
             const shouldHighlight = isUserTeamAtBat();
+            let traditionalLength = gameState.battingOrder.traditional.length || 1;
+            let maleLength = gameState.battingOrder.male.length || 1;
+            let femaleLength = gameState.battingOrder.female.length || 1;
 
             gameState.battingOrder.traditional.forEach((player, index) => {
                 const card = createBattingOrderCard(player);
-                if (shouldHighlight && gameState.gameMode === 'traditional' && index === gameState.currentBatterIndex.traditional % (gameState.battingOrder.traditional.length || 1) ) {
+                if (shouldHighlight && gameState.gameMode === 'traditional' && index === gameState.currentBatterIndex.traditional % traditionalLength ) {
                     card.classList.add('bg-yellow-200', 'ring-2', 'ring-yellow-500');
                 }
                 DOMElements.battingOrderList.appendChild(card);
@@ -1014,7 +1101,7 @@
 
             gameState.battingOrder.male.forEach((player, index) => {
                 const card = createBattingOrderCard(player);
-                if (shouldHighlight && gameState.gameMode === 'wheel' && gameState.nextToBat === 'male' && index === gameState.currentBatterIndex.male % (gameState.battingOrder.male.length || 1) ) {
+                if (shouldHighlight && gameState.gameMode === 'wheel' && gameState.nextToBat === 'male' && index === gameState.currentBatterIndex.male % maleLength ) {
                     card.classList.add('bg-yellow-200', 'ring-2', 'ring-yellow-500');
                 }
                 DOMElements.battingOrderListMale.appendChild(card);
@@ -1022,7 +1109,7 @@
 
             gameState.battingOrder.female.forEach((player, index) => {
                 const card = createBattingOrderCard(player);
-                if (shouldHighlight && gameState.gameMode === 'wheel' && gameState.nextToBat === 'female' && index === gameState.currentBatterIndex.female % (gameState.battingOrder.female.length || 1) ) {
+                if (shouldHighlight && gameState.gameMode === 'wheel' && gameState.nextToBat === 'female' && index === gameState.currentBatterIndex.female % femaleLength ) {
                     card.classList.add('bg-yellow-200', 'ring-2', 'ring-yellow-500');
                 }
                 DOMElements.battingOrderListFemale.appendChild(card);
@@ -1096,11 +1183,15 @@
             resetCounts(); // Resets to 1-1 count
             updateScoreboard();
             highlightCurrentBatter(); // Update highlight for new team
+
+            const teamName = gameState.topOfInning ? 'Away' : 'Home';
+            addLogEntry(`Manual override: Switched to ${teamName} team.`, 'info');
         }
 
         function handleGameModeSelect(e) {
             const mode = e.currentTarget.id === 'mode-traditional' ? 'traditional' : 'wheel';
             gameState.gameMode = mode;
+            addLogEntry(`Game mode set to: ${mode}.`);
             
             DOMElements.gameModeModal.classList.add('hidden');
             
@@ -1108,6 +1199,7 @@
                 DOMElements.traditionalContainer.classList.remove('hidden');
                 DOMElements.traditionalContainer.classList.add('flex');
                 DOMElements.wheelContainer.classList.add('hidden');
+                DOMElements.wheelContainer.classList.remove('md:grid'); // Explicitly remove
                 // Next, ask for user's team
                 DOMElements.userTeamModal.classList.remove('hidden');
             } else {
@@ -1125,6 +1217,7 @@
         function handleWhoBatsFirst(e) {
             // --- BUG FIX: Corrected assignment logic ---
             gameState.nextToBat = (e.currentTarget.id === 'start-male') ? 'male' : 'female';
+            addLogEntry(`"Bat the Wheel" mode: ${gameState.nextToBat}s batting first.`);
             
             DOMElements.whoBatsFirstModal.classList.add('hidden');
             
@@ -1134,11 +1227,14 @@
 
         function handleUserTeamSelect(e) {
             gameState.userTeam = e.currentTarget.id === 'team-home' ? 'home' : 'away';
+            addLogEntry(`User team set to: ${gameState.userTeam}.`);
+            
             DOMElements.userTeamModal.classList.add('hidden');
             DOMElements.modalOverlay.classList.add('hidden'); // Close modal
             
             updateScoreboard(); // Show team highlight
             highlightCurrentBatter(); // Show initial highlight
+            addLogEntry(`--- Game Start! Top of Inning 1. ---`, 'inning');
         }
 
         async function handleRosterSubmit(e) {
@@ -1154,6 +1250,7 @@
 
             try {
                 await addDoc(rosterCollectionRef, newPlayer);
+                addLogEntry(`Player added to roster: ${name}.`);
                 // Clear inputs *except* gender
                 DOMElements.playerNameInput.value = '';
                 DOMElements.playerNumberInput.value = '';
@@ -1181,6 +1278,7 @@
             const exists = targetList.find(p => p.id === id);
             if (!exists) {
                 targetList.push(player);
+                addLogEntry(`Added ${player.name} to lineup.`);
                 renderBattingOrder(); // Update the UI
             }
         }
@@ -1188,7 +1286,8 @@
         async function handleRemovePlayer(e) {
             e.stopPropagation(); // Prevent drag from starting
             const id = e.currentTarget.dataset.id;
-            
+            const player = gameState.roster.find(p => p.id === id);
+
             // Optimistically remove from local state
             gameState.roster = gameState.roster.filter(p => p.id !== id);
             gameState.battingOrder.traditional = gameState.battingOrder.traditional.filter(p => p.id !== id);
@@ -1202,6 +1301,7 @@
             try {
                 const playerDocRef = doc(db, rosterCollectionRef.path, id);
                 await deleteDoc(playerDocRef);
+                if (player) addLogEntry(`Removed ${player.name} from roster.`);
             } catch (error) {
                 console.error("Error removing player: ", error);
                 // Note: If this fails, the local state will be out of sync
@@ -1331,6 +1431,7 @@
             }
             
             renderBattingOrder();
+            addLogEntry(`Batting order updated.`);
         }
 
         function getListById(id) {
@@ -1514,6 +1615,7 @@
             // Setup Event Listeners
             DOMElements.inningToggle.addEventListener('click', handleInningToggle);
             DOMElements.rosterToggleBtn.addEventListener('click', handleRosterToggle);
+            DOMElements.gameLogToggleBtn.addEventListener('click', handleGameLogToggle);
 
 
             DOMElements.btnWalk.addEventListener('click', () => {
@@ -1535,7 +1637,9 @@
 
             // --- BUG FIX: 3rd Out Logic ---
             DOMElements.btnOut.addEventListener('click', () => {
-                const isThirdOut = addOut(); // addOut returns true if it was the 3rd out
+                const batter = getCurrentBatter();
+                const batterName = getBatterName(batter);
+                const isThirdOut = addOut(`${batterName} is out.`); // addOut returns true if it was the 3rd out
                 if (!isThirdOut) { // Only advance to next batter if not 3rd out
                     handleNextBatter();
                 }
@@ -1585,7 +1689,7 @@
                 const runner = gameState.bases[baseNum];
                 if (runner) {
                     gameState.bases[baseNum] = null;
-                    addRuns(1); // Manually scored run
+                    addRuns(1, runner.name); // Manually scored run
                     // DO NOT renumber on score, as per user request.
                     updateBases(); // Just update the UI
                 }
@@ -1600,7 +1704,7 @@
                 if (runner) {
                     const outRunnerDisplayOrder = runner.displayOrder; // Get the order
                     gameState.bases[baseNum] = null;
-                    const isThirdOut = addOut(); // Manually counted out
+                    const isThirdOut = addOut(`${runner.name} is out on base.`); // Manually counted out
                     
                     // --- BUG FIX ---
                     // The renumbering must happen *before* resetting counts
@@ -1646,7 +1750,9 @@
                     gameState.strikes = 3;
                     updateScoreboard(); // <-- FIX: Was misspelled 'updateScorebonew ard()'
                     setTimeout(() => {
-                        const isThirdOut = addOut();
+                        const batter = getCurrentBatter();
+                        const batterName = getBatterName(batter);
+                        const isThirdOut = addOut(`${batterName} strikes out.`);
                         if (!isThirdOut) { // Only advance if not 3rd out
                             handleNextBatter();
                         }
@@ -1661,9 +1767,12 @@
                     // This logic assumes you are *setting* the out count
                     const newCount = (gameState.outs === i + 1) ? i : i + 1;
                     gameState.outs = newCount;
+                    addLogEntry(`Out count manually set to ${newCount}.`, 'info');
 
                     if (gameState.outs === 3) {
-                        advanceHalfInning(); // Let advanceHalfInning handle resets
+                        setTimeout(() => {
+                           advanceHalfInning(); // Let advanceHalfInning handle resets 
+                        }, 500);
                     } else {
                         updateScoreboard();
                     }
