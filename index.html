@@ -115,7 +115,7 @@
 <body class="bg-gray-100 min-h-screen">
 
     <!-- Modal Overlay -->
-    <div id="modal-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+    <div id="modal-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
         
         <!-- Game Mode Selection -->
         <div id="game-mode-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full">
@@ -179,33 +179,50 @@
             </button>
         </div>
         
-        <!-- "Runner on 2nd" Modal (Hidden by default) -->
-        <div id="runner-on-2-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
-            <h2 class="text-xl font-bold text-center mb-6">Runner on 2nd...</h2>
-            <p class="text-center text-gray-700 mb-6">A single was hit. Does the runner on 2nd score?</p>
-            <div class="flex space-x-4">
-                <button id="runner-scores-yes" class="w-full text-lg font-medium py-4 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                    Yes, they score
-                </button>
-                <button id="runner-scores-no" class="w-full text-lg font-medium py-4 px-6 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                    No, hold at 3rd
-                </button>
+        <!-- Base Context Modals -->
+        <div id="base-context-modal-1" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
+            <h2 class="text-xl font-bold text-center mb-6">Runner on 1st</h2>
+            <p class="text-center text-gray-700 mb-6">What happened to this runner?</p>
+            <div class="space-y-4">
+                <button data-action="move" data-base="2" class="base-action-btn w-full text-lg font-medium py-4 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Send to 2nd</button>
+                <button data-action="move" data-base="3" class="base-action-btn w-full text-lg font-medium py-4 px-6 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors">Send to 3rd</button>
+                <button data-action="score" class="base-action-btn w-full text-lg font-medium py-4 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Runner Scored</button>
+                <button data-action="out" class="base-action-btn w-full text-lg font-medium py-4 px-6 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Runner Out</button>
+                <button data-action="cancel" class="base-action-btn w-full mt-4 py-2 px-4 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
             </div>
         </div>
         
-        <!-- "Base Context" Modal (Hidden by default) -->
-        <div id="base-context-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
-            <h2 class="text-xl font-bold text-center mb-6">Runner Action</h2>
-            <p class="text-center text-gray-700 mb-6">What happened to the runner on this base?</p>
+        <div id="base-context-modal-2" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
+            <h2 class="text-xl font-bold text-center mb-6">Runner on 2nd</h2>
+            <p class="text-center text-gray-700 mb-6">What happened to this runner?</p>
             <div class="space-y-4">
-                <button id="btn-runner-scored" class="w-full text-lg font-medium py-4 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                    Runner Scored
+                <button data-action="move" data-base="3" class="base-action-btn w-full text-lg font-medium py-4 px-6 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors">Send to 3rd</button>
+                <button data-action="score" class="base-action-btn w-full text-lg font-medium py-4 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Runner Scored</button>
+                <button data-action="out" class="base-action-btn w-full text-lg font-medium py-4 px-6 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Runner Out</button>
+                <button data-action="cancel" class="base-action-btn w-full mt-4 py-2 px-4 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+            </div>
+        </div>
+        
+        <div id="base-context-modal-3" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
+            <h2 class="text-xl font-bold text-center mb-6">Runner on 3rd</h2>
+            <p class="text-center text-gray-700 mb-6">What happened to this runner?</p>
+            <div class="space-y-4">
+                <button data-action="score" class="base-action-btn w-full text-lg font-medium py-4 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Runner Scored</button>
+                <button data-action="out" class="base-action-btn w-full text-lg font-medium py-4 px-6 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Runner Out</button>
+                <button data-action="cancel" class="base-action-btn w-full mt-4 py-2 px-4 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+            </div>
+        </div>
+
+        <!-- "Force Out" Modal (Hidden by default) -->
+        <div id="force-out-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
+            <h2 class="text-xl font-bold text-center mb-6">3rd Out Recorded</h2>
+            <p class="text-center text-gray-700 mb-6">A run scored on the same play. Was the 3rd out a <span class="font-bold">force out</span>?</p>
+            <div class="flex space-x-4">
+                <button id="force-out-yes" class="w-full text-lg font-medium py-4 px-6 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Yes, Force Out<br><span class="text-sm font-normal">(Run does NOT count)</span>
                 </button>
-                <button id="btn-runner-out" class="w-full text-lg font-medium py-4 px-6 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                    Runner Out
-                </button>
-                <button id="btn-runner-cancel" class="w-full mt-4 py-2 px-4 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
-                    Cancel
+                <button id="force-out-no" class="w-full text-lg font-medium py-4 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    No, Not a Force Out<br><span class="text-sm font-normal">(Run counts)</span>
                 </button>
             </div>
         </div>
@@ -529,6 +546,7 @@
             strikes: 1, // Start with 1-1 count
             outs: 0,
             runsThisInning: 0,
+            runsThisPlay: 0, // --- NEW: Track runs for force out logic
             runnerInningCounter: 0, // Counts runners per half-inning
             bases: { 
                 1: null, // { name: "1 - John", originalNumber: 1, displayOrder: 1 }
@@ -605,8 +623,16 @@
             whoBatsFirstModal: document.getElementById('who-bats-first-modal'),
             userTeamModal: document.getElementById('user-team-modal'),
             hitTypeModal: document.getElementById('hit-type-modal'),
-            runnerOn2Modal: document.getElementById('runner-on-2-modal'),
-            baseContextModal: document.getElementById('base-context-modal'),
+            // Base Context Modals
+            baseContextModal1: document.getElementById('base-context-modal-1'),
+            baseContextModal2: document.getElementById('base-context-modal-2'),
+            baseContextModal3: document.getElementById('base-context-modal-3'),
+            baseActionButtons: document.querySelectorAll('.base-action-btn'),
+            // Force Out Modal
+            forceOutModal: document.getElementById('force-out-modal'),
+            forceOutYesBtn: document.getElementById('force-out-yes'),
+            forceOutNoBtn: document.getElementById('force-out-no'),
+            
             hitTypeButtons: document.querySelectorAll('.hit-type-btn'),
             cancelHitButton: document.getElementById('cancel-hit'),
             modeTraditionalBtn: document.getElementById('mode-traditional'),
@@ -615,11 +641,7 @@
             startFemaleBtn: document.getElementById('start-female'),
             teamHomeBtn: document.getElementById('team-home'),
             teamAwayBtn: document.getElementById('team-away'),
-            runnerScoresYesBtn: document.getElementById('runner-scores-yes'),
-            runnerScoresNoBtn: document.getElementById('runner-scores-no'),
-            btnRunnerScored: document.getElementById('btn-runner-scored'),
-            btnRunnerOut: document.getElementById('btn-runner-out'),
-            btnRunnerCancel: document.getElementById('btn-runner-cancel'),
+            
             userIdDisplay: document.getElementById('user-id'),
             rosterToggleBtn: document.getElementById('roster-toggle-btn'),
             rosterToggleContent: document.getElementById('roster-toggle-content'),
@@ -725,8 +747,31 @@
         function resetCounts() {
             gameState.balls = STARTING_BALLS;
             gameState.strikes = STARTING_STRIKES;
+            gameState.runsThisPlay = 0; // Reset runs this play
             updateScoreboard();
         }
+        
+        // --- NEW Force Out Logic ---
+        function handleForceOut(wasForceOut) {
+            hideAllModals();
+            if (wasForceOut) {
+                // Negate the runs scored *this play*
+                const runsToNegate = gameState.runsThisPlay;
+                if (runsToNegate > 0) {
+                    addLogEntry(`Runs negated due to force out (-${runsToNegate} run${runsToNegate > 1 ? 's' : ''}).`, 'out');
+                    gameState.runsThisInning -= runsToNegate;
+                    if (gameState.topOfInning) {
+                        gameState.awayScore -= runsToNegate;
+                    } else {
+                        gameState.homeScore -= runsToNegate;
+                    }
+                }
+            }
+            // Whether it was a force out or not, the inning is now over.
+            advanceHalfInning();
+        }
+        // --- End Force Out Logic ---
+
 
         function advanceHalfInning() {
             const currentTeam = gameState.topOfInning ? 'Away' : 'Home';
@@ -763,22 +808,36 @@
                 addLogEntry(logMessage, 'out');
                 updateScoreboard();
             } else {
-                // 3rd out, end the half-inning
+                // 3rd out
                 addLogEntry(logMessage, 'out');
                 isThirdOut = true; // Set flag
                 updateScoreboard(); // Show 3 outs briefly
-                setTimeout(() => {
-                    advanceHalfInning();
-                }, 500);
+                
+                // --- NEW Force Out Check ---
+                if (gameState.runsThisPlay > 0) {
+                    // A run scored on the 3rd out play, ask if it was a force out
+                    setTimeout(() => { // Delay to let user see the 3rd out
+                        showModal(DOMElements.forceOutModal);
+                    }, 500);
+                } else {
+                    // No runs on the play, just advance the inning
+                    setTimeout(() => {
+                        advanceHalfInning();
+                    }, 500);
+                }
             }
             return isThirdOut; // Return if it was the 3rd out
         }
 
-        function addRuns(numRuns, batterName = 'Runner') {
+        function addRuns(numRuns, batterName = 'Runner', isManual = false) {
             if (numRuns <= 0) return;
-
-            addLogEntry(`${batterName} scores! (+${numRuns} run${numRuns > 1 ? 's' : ''})`, 'run');
             
+            // Only log if it's a manual score or a forced-in run
+            if(isManual) {
+                addLogEntry(`${batterName} scores! (+${numRuns} run${numRuns > 1 ? 's' : ''})`, 'run');
+            }
+
+            gameState.runsThisPlay += numRuns; // Track for force out
             gameState.runsThisInning += numRuns;
             if (gameState.topOfInning) {
                 gameState.awayScore += numRuns;
@@ -919,116 +978,108 @@
             }
 
             if (runsScored > 0) {
-                addRuns(runsScored, scoredRunnerName);
+                addRuns(runsScored, scoredRunnerName, true); // This is a forced-in run, log it
             }
             updateBases();
         }
         
-        // --- NEW HIT LOGIC ---
+        // --- NEW HIT "PUSH" LOGIC ---
         function advanceRunnersOnHit(batter, hitType) {
-            // Special case: Single with runner on 2nd
-            if (hitType === 1 && gameState.bases[2]) {
-                // Show the modal to ask the user
-                DOMElements.hitTypeModal.classList.add('hidden');
-                DOMElements.runnerOn2Modal.classList.remove('hidden');
-                
-                // Add event listeners for the decision
-                DOMElements.runnerScoresYesBtn.onclick = () => {
-                    DOMElements.modalOverlay.classList.add('hidden');
-                    DOMElements.runnerOn2Modal.classList.add('hidden');
-                    // Pass 'true' to indicate runner on 2 scores
-                    finishHitAdvance(batter, hitType, true); 
-                    handleNextBatter();
-                };
-                DOMElements.runnerScoresNoBtn.onclick = () => {
-                    DOMElements.modalOverlay.classList.add('hidden');
-                    DOMElements.runnerOn2Modal.classList.add('hidden');
-                    // Pass 'false' to indicate runner on 2 holds at 3rd
-                    finishHitAdvance(batter, hitType, false); 
-                    handleNextBatter();
-                };
-            } else {
-                // Standard hit logic for doubles, triples, HRs, or singles w/o runner on 2
-                DOMElements.hitTypeModal.classList.add('hidden');
-                DOMElements.modalOverlay.classList.add('hidden');
-                finishHitAdvance(batter, hitType, null);
-                handleNextBatter();
-            }
-        }
-
-        function finishHitAdvance(batter, hitType, runnerOn2Scores) {
             const batterName = getBatterName(batter);
             const hitNames = ['Single', 'Double', 'Triple', 'Home Run'];
             addLogEntry(`${batterName} hits a ${hitNames[hitType - 1]}!`, 'info');
 
+            hideAllModals();
+            
             const newRunner = createNewRunner(batter);
             let runsScored = 0;
             const scoredRunners = [];
+
+            // --- THIS IS THE NEW "PUSH" LOGIC ---
+            // Create a temporary representation of the bases + batter
+            const bases = [
+                newRunner, // Batter is at base 0
+                gameState.bases[1],
+                gameState.bases[2],
+                gameState.bases[3]
+            ];
+
             const newBaseState = { 1: null, 2: null, 3: null };
 
-            // 1. Place the batter
-            if (hitType === 4) { // Home Run
-                runsScored++;
-                scoredRunners.push(newRunner.name);
-            } else {
-                newBaseState[hitType] = newRunner;
-            }
-
-            // 2. Advance existing runners
-            
-            // Runner on 3rd
-            if (gameState.bases[3]) {
-                runsScored++;
-                scoredRunners.push(gameState.bases[3].name);
-            }
-            
-            // Runner on 2nd
-            if (gameState.bases[2]) {
-                if (hitType === 1) { // Single
-                    if (runnerOn2Scores === true) {
-                        runsScored++;
-                        scoredRunners.push(gameState.bases[2].name);
-                    } else { // runnerOn2Scores === false
-                        newBaseState[3] = gameState.bases[2]; // Hold at 3rd
-                    }
-                } else { // Double or Triple
+            // Advance everyone by hitType
+            for (let i = 3; i >= 0; i--) {
+                const runner = bases[i];
+                if (!runner) continue;
+                
+                const newBase = i + hitType;
+                
+                if (newBase >= 4) {
+                    // Runner scores
                     runsScored++;
-                    scoredRunners.push(gameState.bases[2].name);
-                }
-            }
-            
-            // Runner on 1st
-            if (gameState.bases[1]) {
-                if (hitType === 1) { // Single
-                    if (newBaseState[2]) {
-                         newBaseState[2] = gameState.bases[1];
-                    } else if (newBaseState[3]) { // R2 held 3rd
-                        newBaseState[2] = gameState.bases[1];
-                    }
-                    else {
-                        newBaseState[2] = gameState.bases[1];
-                    }
-                } else if (hitType === 2) { // Double
-                    // R1 goes to 3rd. (Batter is on 2)
-                    if(newBaseState[3]) { // 3rd is occupied by R2
-                        runsScored++; // R1 scores
-                        scoredRunners.push(gameState.bases[1].name);
+                    scoredRunners.push(runner.name);
+                } else {
+                    // Place runner on new base, if it's empty
+                    if (!newBaseState[newBase]) {
+                        newBaseState[newBase] = runner;
                     } else {
-                        newBaseState[3] = gameState.bases[1];
+                        // Base is occupied, push runner to next base
+                        // This handles the "push" logic (e.g., batter hits single, runner on 1st goes to 2nd)
+                        // A more complex "push" is needed here.
+                        // Let's re-think: process from 3rd base down.
                     }
-                } else { // Triple or HR
-                    runsScored++;
-                    scoredRunners.push(gameState.bases[1].name);
                 }
             }
             
-            gameState.bases = newBaseState;
+            // --- SIMPLER PUSH LOGIC ---
+            let runsFromPush = 0;
+            const scoredFromPush = [];
+            const finalBases = { 1: null, 2: null, 3: null };
 
-            if (runsScored > 0) {
+            // Place batter first
+            if (hitType === 4) { // Home Run
+                runsFromPush++;
+                scoredFromPush.push(newRunner.name);
+            } else {
+                finalBases[hitType] = newRunner;
+            }
+
+            // Process existing runners from 3rd down to 1st
+            for (let baseNum = 3; baseNum >= 1; baseNum--) {
+                const runner = gameState.bases[baseNum];
+                if (!runner) continue;
+
+                const targetBase = baseNum + hitType;
+                
+                if (targetBase >= 4) { // Runner scores
+                    runsFromPush++;
+                    scoredFromPush.push(runner.name);
+                } else {
+                    // Check if target base is occupied
+                    if (finalBases[targetBase]) {
+                        // Target base is full, push this runner to the *next* base
+                        const nextBase = targetBase + 1;
+                        if (nextBase >= 4) {
+                            runsFromPush++;
+                            scoredFromPush.push(runner.name);
+                        } else {
+                            finalBases[nextBase] = runner;
+                        }
+                    } else {
+                        // Target base is empty, place them
+                        finalBases[targetBase] = runner;
+                    }
+                }
+            }
+            // --- END PUSH LOGIC ---
+
+            gameState.bases = finalBases;
+
+            if (runsFromPush > 0) {
                 // Log runs one by one
-                scoredRunners.forEach(name => addRuns(1, name));
+                scoredFromPush.forEach(name => addRuns(1, name, true));
             }
             updateBases();
+            handleNextBatter();
         }
         // --- END NEW HIT LOGIC ---
 
@@ -1130,10 +1181,10 @@
         }
 
         function validateBattingOrder() {
+            // No need to disable button, just show warning
             if (gameState.gameMode !== 'traditional' || gameState.battingOrder.traditional.length < 2) {
                 DOMElements.battingOrderList.classList.remove('invalid-order');
                 DOMElements.orderWarning.classList.add('hidden');
-                // DOMElements.btnNextBatter.disabled = false;
                 return true;
             }
 
@@ -1147,7 +1198,6 @@
 
             DOMElements.battingOrderList.classList.toggle('invalid-order', !isValid);
             DOMElements.orderWarning.classList.toggle('hidden', isValid);
-            // DOMElements.btnNextBatter.disabled = !isValid;
             
             return isValid;
         }
@@ -1492,18 +1542,14 @@
                     const runner = gameState.bases[baseNum];
                     if (runner) {
                         // Runner is present, show context menu
-                        DOMElements.baseContextModal.dataset.baseNum = baseNum;
+                        DOMElements.baseContextModal1.dataset.baseNum = baseNum;
+                        DOMElements.baseContextModal2.dataset.baseNum = baseNum;
+                        DOMElements.baseContextModal3.dataset.baseNum = baseNum;
                         
-                        // Show modal
-                        DOMElements.modalOverlay.classList.remove('hidden');
-                        DOMElements.baseContextModal.classList.remove('hidden');
-                        
-                        // Hide all other modals
-                        DOMElements.gameModeModal.classList.add('hidden');
-                        DOMElements.whoBatsFirstModal.classList.add('hidden');
-                        DOMElements.userTeamModal.classList.add('hidden');
-                        DOMElements.hitTypeModal.classList.add('hidden');
-                        DOMElements.runnerOn2Modal.classList.add('hidden');
+                        // Show the correct modal for the base
+                        if(baseNum === 1) showModal(DOMElements.baseContextModal1);
+                        else if(baseNum === 2) showModal(DOMElements.baseContextModal2);
+                        else if(baseNum === 3) showModal(DOMElements.baseContextModal3);
                     }
                     // If base is empty, do nothing
                 });
@@ -1613,22 +1659,30 @@
                 });
                 gameState.roster = newRoster;
                 renderRoster();
-                // TODO: Prune batting order of players no longer in roster?
-                // For now, we'll allow it.
+                // When roster reloads, re-render batting order to check for + buttons
+                renderBattingOrder();
             }, (error) => {
                 console.error("Error with roster snapshot: ", error);
             });
         }
         
-        // --- Helper to hide all modals
+        // --- Helper to show/hide all modals
         function hideAllModals() {
             DOMElements.modalOverlay.classList.add('hidden');
             DOMElements.gameModeModal.classList.add('hidden');
             DOMElements.whoBatsFirstModal.classList.add('hidden');
             DOMElements.userTeamModal.classList.add('hidden');
             DOMElements.hitTypeModal.classList.add('hidden');
-            DOMElements.runnerOn2Modal.classList.add('hidden');
-            DOMElements.baseContextModal.classList.add('hidden');
+            DOMElements.baseContextModal1.classList.add('hidden');
+            DOMElements.baseContextModal2.classList.add('hidden');
+            DOMElements.baseContextModal3.classList.add('hidden');
+            DOMElements.forceOutModal.classList.add('hidden');
+        }
+
+        function showModal(modalElement) {
+            hideAllModals(); // Hide all first
+            DOMElements.modalOverlay.classList.remove('hidden'); // Show overlay
+            modalElement.classList.remove('hidden'); // Show specific modal
         }
 
         // --- App Entry Point ---
@@ -1637,6 +1691,7 @@
             // Setup initial UI state
             updateScoreboard();
             updateBases();
+            showModal(DOMElements.gameModeModal); // Start with first modal
             
             // Setup Event Listeners
             DOMElements.inningToggle.addEventListener('click', handleInningToggle);
@@ -1650,18 +1705,9 @@
                 handleNextBatter();
             });
             DOMElements.btnHit.addEventListener('click', () => {
-                // Show hit type modal
-                DOMElements.modalOverlay.classList.remove('hidden');
-                DOMElements.hitTypeModal.classList.remove('hidden');
-                // Hide other modals just in case
-                DOMElements.gameModeModal.classList.add('hidden');
-                DOMElements.whoBatsFirstModal.classList.add('hidden');
-                DOMElements.userTeamModal.classList.add('hidden');
-                DOMElements.runnerOn2Modal.classList.add('hidden');
-                DOMElements.baseContextModal.classList.add('hidden');
+                showModal(DOMElements.hitTypeModal);
             });
 
-            // --- BUG FIX: 3rd Out Logic ---
             DOMElements.btnOut.addEventListener('click', () => {
                 const batter = getCurrentBatter();
                 const batterName = getBatterName(batter);
@@ -1670,7 +1716,6 @@
                     handleNextBatter();
                 }
             });
-            // --- END BUG FIX ---
 
             DOMElements.btnEndGame.addEventListener('click', () => {
                 // Simple reset by reloading the page
@@ -1698,56 +1743,68 @@
                 btn.addEventListener('click', (e) => {
                     const hitType = parseInt(e.currentTarget.dataset.hitType, 10);
                     const batter = getCurrentBatter();
-                    // This function will handle showing the next modal if needed
                     advanceRunnersOnHit(batter, hitType); 
                 });
             });
             DOMElements.cancelHitButton.addEventListener('click', () => {
-                DOMElements.modalOverlay.classList.add('hidden');
-                DOMElements.hitTypeModal.classList.add('hidden');
-            });
-            
-            // --- Base Context Modal Listeners (UPDATED) ---
-            DOMElements.btnRunnerScored.addEventListener('click', () => {
-                const baseNum = DOMElements.baseContextModal.dataset.baseNum;
-                if (!baseNum) return;
-                
-                const runner = gameState.bases[baseNum];
-                if (runner) {
-                    gameState.bases[baseNum] = null;
-                    addRuns(1, runner.name); // Manually scored run
-                    // DO NOT renumber on score, as per user request.
-                    updateBases(); // Just update the UI
-                }
                 hideAllModals();
             });
             
-            DOMElements.btnRunnerOut.addEventListener('click', () => {
-                const baseNum = DOMElements.baseContextModal.dataset.baseNum;
-                if (!baseNum) return;
-
-                const runner = gameState.bases[baseNum];
-                if (runner) {
-                    const outRunnerDisplayOrder = runner.displayOrder; // Get the order
-                    gameState.bases[baseNum] = null;
-                    const isThirdOut = addOut(`${runner.name} is out on base.`); // Manually counted out
+            // --- Base Context Modal Listeners (NEW) ---
+            DOMElements.baseActionButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const action = e.currentTarget.dataset.action;
+                    const targetBaseNum = parseInt(e.currentTarget.dataset.base, 10);
+                    const currentBaseNum = parseInt(e.currentTarget.closest('.bg-white').dataset.baseNum, 10);
                     
-                    // --- BUG FIX ---
-                    // The renumbering must happen *before* resetting counts
-                    renumberRunnersOnBase(outRunnerDisplayOrder); // Renumber remaining
-                    // updateBases() is called inside renumberRunnersOnBase
-                    // --- END BUG FIX ---
-
-                    if (!isThirdOut) { // Only reset counts if not 3rd out
-                        resetCounts(); // An out was made, reset counts for current batter
+                    if (action === 'cancel') {
+                        hideAllModals();
+                        return;
                     }
-                }
-                hideAllModals();
+
+                    const runner = gameState.bases[currentBaseNum];
+                    if (!runner) {
+                        hideAllModals();
+                        return;
+                    }
+                    
+                    // All actions remove the runner from the current base
+                    gameState.bases[currentBaseNum] = null;
+
+                    if (action === 'move') {
+                        // Check if target base is occupied, if so, push
+                        if (gameState.bases[targetBaseNum]) {
+                            const nextBase = targetBaseNum + 1;
+                            if (nextBase >= 4) {
+                                addRuns(1, gameState.bases[targetBaseNum].name, true);
+                            } else {
+                                gameState.bases[nextBase] = gameState.bases[targetBaseNum];
+                            }
+                        }
+                        // Move runner to target base
+                        gameState.bases[targetBaseNum] = runner;
+                        addLogEntry(`${runner.name} advances to ${targetBaseNum === 2 ? '2nd' : '3rd'}.`, 'info');
+                    } 
+                    else if (action === 'score') {
+                        addRuns(1, runner.name, true); // Manually scored run
+                        // Do not renumber on score
+                    }
+                    else if (action === 'out') {
+                        const isThirdOut = addOut(`${runner.name} is out on base.`); // Manually counted out
+                        renumberRunnersOnBase(runner.displayOrder); // Renumber remaining
+                        if (!isThirdOut) { 
+                            resetCounts(); // An out was made, reset counts
+                        }
+                    }
+                    
+                    updateBases(); // Update UI
+                    hideAllModals();
+                });
             });
             
-            DOMElements.btnRunnerCancel.addEventListener('click', () => {
-                hideAllModals();
-            });
+            // Force Out Modal Listeners
+            DOMElements.forceOutYesBtn.addEventListener('click', () => handleForceOut(true));
+            DOMElements.forceOutNoBtn.addEventListener('click', () => handleForceOut(false));
 
 
             // --- NEW Ball/Strike Button Listeners ---
@@ -1796,9 +1853,16 @@
                     addLogEntry(`Out count manually set to ${newCount}.`, 'info');
 
                     if (gameState.outs === 3) {
-                        setTimeout(() => {
-                           advanceHalfInning(); // Let advanceHalfInning handle resets 
-                        }, 500);
+                        // Check for force out
+                        if (gameState.runsThisPlay > 0) {
+                            setTimeout(() => {
+                                showModal(DOMElements.forceOutModal);
+                            }, 500);
+                        } else {
+                           setTimeout(() => {
+                               advanceHalfInning(); // Let advanceHalfInning handle resets 
+                            }, 500); 
+                        }
                     } else {
                         updateScoreboard();
                     }
