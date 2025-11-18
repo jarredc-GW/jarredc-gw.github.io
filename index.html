@@ -985,7 +985,7 @@
             updateBases();
         }
         
-        // --- NEW HIT "PUSH" LOGIC ---
+        // --- NEW "PUSH" HIT LOGIC (FIXED) ---
         function advanceRunnersOnHit(batter, hitType) {
             const batterName = getBatterName(batter);
             const hitNames = ['Single', 'Double', 'Triple', 'Home Run'];
@@ -994,45 +994,57 @@
             hideAllModals();
             
             const newRunner = createNewRunner(batter);
-            let runsScored = 0;
             const scoredRunners = [];
 
-            // --- SIMPLER PUSH LOGIC ---
+            // --- RE-FIXED PUSH LOGIC ---
+            // This logic only "pushes" runners if the batter's hit
+            // would land on an occupied base.
+            
             let runsFromPush = 0;
             const scoredFromPush = [];
-            const finalBases = { 1: null, 2: null, 3: null };
-
-            // Place batter first
-            if (hitType === 4) { // Home Run
+            
+            // Handle Home Run separately (clears all bases)
+            if (hitType === 4) {
+                // Batter scores
                 runsFromPush++;
                 scoredFromPush.push(newRunner.name);
+                // Existing runners score
+                for (let baseNum = 3; baseNum >= 1; baseNum--) {
+                    if (gameState.bases[baseNum]) {
+                        runsFromPush++;
+                        scoredFromPush.push(gameState.bases[baseNum].name);
+                        gameState.bases[baseNum] = null; // Clear base
+                    }
+                }
             } else {
-                finalBases[hitType] = newRunner;
-            }
-
-            // Process existing runners from 3rd down to 1st
-            for (let baseNum = 3; baseNum >= 1; baseNum--) {
-                const runner = gameState.bases[baseNum];
-                if (!runner) continue;
-
-                let targetBase = baseNum + hitType;
+                // --- Handle Single, Double, Triple ---
+                // Check for "push" chain starting from the batter
+                let currentRunner = newRunner;
+                let currentBase = hitType;
                 
-                // Handle "push" logic
-                while (targetBase < 4 && finalBases[targetBase]) {
-                    targetBase++; // Keep pushing runner forward if base is occupied
+                while (currentBase < 4 && currentRunner) {
+                    const runnerOnBase = gameState.bases[currentBase];
+                    
+                    // Place the current runner on this base
+                    gameState.bases[currentBase] = currentRunner;
+                    
+                    if (runnerOnBase) {
+                        // This base was occupied. "Push" the runner who was here.
+                        currentRunner = runnerOnBase;
+                        currentBase++; // Check the next base
+                    } else {
+                        // This base was empty. The push chain stops.
+                        currentRunner = null;
+                    }
                 }
-
-                if (targetBase >= 4) { // Runner scores
+                
+                // If the loop finished with a runner still in hand, they score
+                if (currentRunner) {
                     runsFromPush++;
-                    scoredFromPush.push(runner.name);
-                } else {
-                    // Place runner on the final unoccupied base
-                    finalBases[targetBase] = runner;
+                    scoredFromPush.push(currentRunner.name);
                 }
             }
-            // --- END PUSH LOGIC ---
-
-            gameState.bases = finalBases;
+            // --- END RE-FIXED PUSH LOGIC ---
 
             if (runsFromPush > 0) {
                 // Log runs one by one
