@@ -747,7 +747,8 @@
         function resetCounts() {
             gameState.balls = STARTING_BALLS;
             gameState.strikes = STARTING_STRIKES;
-            gameState.runsThisPlay = 0; // Reset runs this play
+            // --- BUG FIX: DO NOT RESET runsThisPlay HERE ---
+            // gameState.runsThisPlay = 0; 
             updateScoreboard();
         }
         
@@ -780,6 +781,7 @@
             gameState.outs = 0;
             gameState.runsThisInning = 0;
             gameState.runnerInningCounter = 0; // Reset for new half-inning
+            gameState.runsThisPlay = 0; // --- BUG FIX: Reset runsThisPlay HERE ---
             
             if (gameState.topOfInning) {
                 // Top of inning ends, switch to bottom
@@ -995,41 +997,6 @@
             let runsScored = 0;
             const scoredRunners = [];
 
-            // --- THIS IS THE NEW "PUSH" LOGIC ---
-            // Create a temporary representation of the bases + batter
-            const bases = [
-                newRunner, // Batter is at base 0
-                gameState.bases[1],
-                gameState.bases[2],
-                gameState.bases[3]
-            ];
-
-            const newBaseState = { 1: null, 2: null, 3: null };
-
-            // Advance everyone by hitType
-            for (let i = 3; i >= 0; i--) {
-                const runner = bases[i];
-                if (!runner) continue;
-                
-                const newBase = i + hitType;
-                
-                if (newBase >= 4) {
-                    // Runner scores
-                    runsScored++;
-                    scoredRunners.push(runner.name);
-                } else {
-                    // Place runner on new base, if it's empty
-                    if (!newBaseState[newBase]) {
-                        newBaseState[newBase] = runner;
-                    } else {
-                        // Base is occupied, push runner to next base
-                        // This handles the "push" logic (e.g., batter hits single, runner on 1st goes to 2nd)
-                        // A more complex "push" is needed here.
-                        // Let's re-think: process from 3rd base down.
-                    }
-                }
-            }
-            
             // --- SIMPLER PUSH LOGIC ---
             let runsFromPush = 0;
             const scoredFromPush = [];
@@ -1048,26 +1015,19 @@
                 const runner = gameState.bases[baseNum];
                 if (!runner) continue;
 
-                const targetBase = baseNum + hitType;
+                let targetBase = baseNum + hitType;
                 
+                // Handle "push" logic
+                while (targetBase < 4 && finalBases[targetBase]) {
+                    targetBase++; // Keep pushing runner forward if base is occupied
+                }
+
                 if (targetBase >= 4) { // Runner scores
                     runsFromPush++;
                     scoredFromPush.push(runner.name);
                 } else {
-                    // Check if target base is occupied
-                    if (finalBases[targetBase]) {
-                        // Target base is full, push this runner to the *next* base
-                        const nextBase = targetBase + 1;
-                        if (nextBase >= 4) {
-                            runsFromPush++;
-                            scoredFromPush.push(runner.name);
-                        } else {
-                            finalBases[nextBase] = runner;
-                        }
-                    } else {
-                        // Target base is empty, place them
-                        finalBases[targetBase] = runner;
-                    }
+                    // Place runner on the final unoccupied base
+                    finalBases[targetBase] = runner;
                 }
             }
             // --- END PUSH LOGIC ---
