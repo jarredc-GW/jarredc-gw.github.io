@@ -30,7 +30,7 @@
             border: 2px dashed #ef4444 !important;
         }
         .baseball-diamond {
-            width: 85%; /* Reduced by 15% */
+            width: 85%;
             margin: 0 auto;
             aspect-ratio: 1 / 1;
             position: relative;
@@ -41,7 +41,7 @@
         }
         .base {
             position: absolute;
-            width: 12.75%; /* Reduced by 15% (was 15%) */
+            width: 12.75%;
             height: 12.75%;
             cursor: pointer;
             transition: transform 0.2s;
@@ -137,7 +137,7 @@
             <p class="text-sm text-gray-500 mt-4 text-center">"Traditional" requires M/F alternate order.<br>"Bat the Wheel" uses separate M/F lists.</p>
         </div>
 
-        <!-- "Who Bats First?" Modal (Hidden by default) -->
+        <!-- "Who Bats First?" Modal -->
         <div id="who-bats-first-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Who Bats First?</h2>
             <div class="space-y-4">
@@ -150,7 +150,7 @@
             </div>
         </div>
 
-        <!-- "Select Your Team" Modal (Hidden by default) -->
+        <!-- "Select Your Team" Modal -->
         <div id="user-team-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Which team are you?</h2>
             <div class="space-y-4">
@@ -163,7 +163,7 @@
             </div>
         </div>
 
-        <!-- "Hit Type" Modal (Hidden by default) -->
+        <!-- "Hit Type" Modal -->
         <div id="hit-type-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Select Hit Type</h2>
             <div class="grid grid-cols-2 gap-4">
@@ -1559,6 +1559,45 @@
         }
         // --- END RUNNER NUMBERING FIX ---
 
+        // --- RESTORED initAuth FUNCTION ---
+        async function initAuth() {
+            try {
+                // Initialize Firebase
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                onAuthStateChanged(auth, user => {
+                    if (user) {
+                        console.log("User is authenticated:", user.uid);
+                        userId = user.uid;
+                        DOMElements.userIdDisplay.textContent = userId;
+                        // User is signed in, set up Firestore references and listener
+                        
+                        // Use the path compatible with the provided security rules
+                        rosterCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/roster`);
+                        
+                        // Call setupRosterListener wrapped in a short delay to ensure permissions are fully propagated
+                        setTimeout(setupRosterListener, 100); 
+                    } else {
+                        console.log("User is not authenticated.");
+                        userId = null;
+                        DOMElements.userIdDisplay.textContent = 'not signed in';
+                        unsubscribeRoster(); // Stop listening if logged out
+                        gameState.roster = [];
+                        renderRoster();
+                    }
+                });
+
+                // Sign in Anonymously
+                console.log("Signing in anonymously...");
+                await signInAnonymously(auth);
+
+            } catch (error) {
+                console.error("Firebase Initialization Error:", error);
+                DOMElements.userIdDisplay.textContent = 'Error';
+            }
+        }
 
         // --- Roster Toggle ---
         function handleRosterToggle() {
