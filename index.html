@@ -30,7 +30,8 @@
             border: 2px dashed #ef4444 !important;
         }
         .baseball-diamond {
-            width: 100%;
+            width: 85%; /* Reduced by 15% */
+            margin: 0 auto;
             aspect-ratio: 1 / 1;
             position: relative;
         }
@@ -40,8 +41,8 @@
         }
         .base {
             position: absolute;
-            width: 15%;
-            height: 15%;
+            width: 12.75%; /* Reduced by 15% (was 15%) */
+            height: 12.75%;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -105,15 +106,15 @@
         
         /* Batting Indicator Classes */
         .batting-current {
-            border-left: 4px solid #10b981;
-            background-color: #f0fdf4;
+            border-left: 4px solid #10b981; /* Green */
+            background-color: #f0fdf4; /* Light green */
         }
         .batting-on-deck {
-            border-left: 4px solid #f59e0b;
-            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b; /* Yellow */
+            background-color: #fffbeb; /* Light yellow */
         }
         .batting-in-hole {
-            border-left: 4px solid #fcd34d;
+            border-left: 4px solid #fcd34d; /* Pale Yellow */
         }
     </style>
 </head>
@@ -295,11 +296,11 @@
                 </div>
 
                 <div id="wheel-order-container" class="hidden flex-grow md:grid md:grid-cols-2 md:gap-4 min-h-0">
-                    <div class="flex-grow flex flex-col min-h-0">
+                    <div class="flex flex-col min-h-0">
                         <h4 class="text-md font-semibold text-center text-blue-700 mb-2">Males</h4>
                         <div id="batting-order-list-male" class="bg-blue-50 p-3 rounded-lg shadow-inner flex-grow overflow-y-auto space-y-2"></div>
                     </div>
-                    <div class="flex-grow flex flex-col min-h-0 mt-4 md:mt-0">
+                    <div class="flex flex-col min-h-0">
                         <h4 class="text-md font-semibold text-center text-pink-700 mb-2">Females</h4>
                         <div id="batting-order-list-female" class="bg-pink-50 p-3 rounded-lg shadow-inner flex-grow overflow-y-auto space-y-2"></div>
                     </div>
@@ -354,7 +355,6 @@
                                 <div>
                                     <div class="text-xs font-medium text-gray-500 uppercase">Strikes</div>
                                     <div class="flex space-x-1 mt-1">
-                                        <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
                                         <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
                                         <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
                                     </div>
@@ -413,7 +413,7 @@
     <script type="module">
         // --- Firebase Config ---
         // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         // TODO: Add SDKs for Firebase products that you want to use
         // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -440,7 +440,7 @@
             getAuth, 
             signInAnonymously, 
             onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+        } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
         import { 
             getFirestore, 
             doc, 
@@ -453,7 +453,7 @@
             collection, 
             query,
             setLogLevel
-        } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+        } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
         // --- Helper Functions Moved to Top ---
         function showModal(el) {
@@ -476,8 +476,8 @@
             awayScore: 0,
             inning: 1,
             topOfInning: true,
-            balls: 1, // Start with 1-1 count
-            strikes: 1, // Start with 1-1 count
+            balls: 1,
+            strikes: 1,
             outs: 0,
             runsThisInning: 0,
             runsThisPlay: 0,
