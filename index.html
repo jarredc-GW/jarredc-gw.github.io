@@ -233,6 +233,20 @@
             </div>
         </div>
 
+        <!-- "End Game" Confirmation Modal -->
+        <div id="end-game-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
+            <h2 class="text-xl font-bold text-center mb-6">End Game?</h2>
+            <p class="text-center text-gray-700 mb-6">This will reset scores and the game log, but keep your roster and lineup. Are you sure?</p>
+            <div class="flex space-x-4">
+                <button id="end-game-yes" class="w-full text-lg font-medium py-4 px-6 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Yes, End Game
+                </button>
+                <button id="end-game-no" class="w-full text-lg font-medium py-4 px-6 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+
     </div>
 
     <!-- Main Content -->
@@ -414,8 +428,13 @@
 
     <script type="module">
         // --- Firebase Config ---
+        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
             apiKey: "AIzaSyBN9HfXy4k2HIVGklUtk5fMA8yyX9RZH2g",
             authDomain: "softball-scorecard.firebaseapp.com",
@@ -543,6 +562,9 @@
             forceOutModal: document.getElementById('force-out-modal'),
             forceOutYesBtn: document.getElementById('force-out-yes'),
             forceOutNoBtn: document.getElementById('force-out-no'),
+            endGameModal: document.getElementById('end-game-modal'),
+            endGameYesBtn: document.getElementById('end-game-yes'),
+            endGameNoBtn: document.getElementById('end-game-no'),
             modeTraditionalBtn: document.getElementById('mode-traditional'),
             modeWheelBtn: document.getElementById('mode-wheel'),
             startMaleBtn: document.getElementById('start-male'),
@@ -891,7 +913,7 @@
             updateBases();
         }
         
-        // --- NEW HIT "PUSH" LOGIC ---
+        // --- CORRECTED HIT PUSH LOGIC (v5) ---
         function advanceRunnersOnHit(batter, hitType) {
             const batterName = getBatterName(batter);
             const hitNames = ['Single', 'Double', 'Triple', 'Home Run'];
@@ -902,141 +924,73 @@
             const newRunner = createNewRunner(batter);
             const scoredRunners = [];
 
-            // --- RE-FIXED PUSH LOGIC ---
-            let runsFromPush = 0;
-            const scoredFromPush = [];
-            const finalBases = { 1: null, 2: null, 3: null };
+            // Capture initial state
+            const r1 = gameState.bases[1];
+            const r2 = gameState.bases[2];
+            const r3 = gameState.bases[3];
+            
+            // Clear bases to rebuild state
+            gameState.bases = { 1: null, 2: null, 3: null }; 
 
-            // 1. Handle Home Run: Clear all bases and score everyone
-            if (hitType === 4) {
-                for (let baseNum = 3; baseNum >= 1; baseNum--) {
-                    if (gameState.bases[baseNum]) {
-                        runsFromPush++;
-                        scoredFromPush.push(gameState.bases[baseNum].name);
-                    }
-                    gameState.bases[baseNum] = null; // Clear base
-                }
-                runsFromPush++;
-                scoredFromPush.push(newRunner.name); // Batter scores
-                gameState.bases = { 1: null, 2: null, 3: null }; // Ensure clear state
+            if (hitType === 4) { // Home Run
+                if (r3) scoredRunners.push(r3.name);
+                if (r2) scoredRunners.push(r2.name);
+                if (r1) scoredRunners.push(r1.name);
+                scoredRunners.push(newRunner.name);
+            } 
+            else if (hitType === 3) { // Triple
+                if (r3) scoredRunners.push(r3.name);
+                if (r2) scoredRunners.push(r2.name);
+                if (r1) scoredRunners.push(r1.name);
+                gameState.bases[3] = newRunner;
+            } 
+            else if (hitType === 2) { // Double
+                if (r3) scoredRunners.push(r3.name);
+                if (r2) scoredRunners.push(r2.name);
+                // R1 advances to 3rd
+                if (r1) gameState.bases[3] = r1;
+                gameState.bases[2] = newRunner;
+            } 
+            else if (hitType === 1) { // Single (Force Chain Logic)
                 
-            } else {
-                 // Place batter first on their hit base
-                finalBases[hitType] = newRunner;
-
-                // Process existing runners from 3rd down to 1st
-                // Only advance a runner if their base or the one they are forced to is taken by the "push" coming from behind
+                // 1. Batter takes 1st
+                gameState.bases[1] = newRunner;
                 
-                // Let's model this as a chain reaction from the batter.
-                // Batter lands on [hitType].
-                // IF [hitType] was occupied, THAT runner is pushed to [hitType + 1].
-                // IF [hitType + 1] was occupied, THAT runner is pushed to [hitType + 2].
-                // ...and so on.
-
-                let currentPusher = newRunner;
-                let currentPusherBase = hitType;
-
-                // We need to know who was where originally
-                const originalRunners = { ...gameState.bases };
-
-                // Recursive push function
-                function pushRunner(baseToOccupy, pushingRunner) {
-                     // Check if someone is currently at baseToOccupy
-                     const occupant = originalRunners[baseToOccupy];
-                     
-                     // Place the pusher
-                     finalBases[baseToOccupy] = pushingRunner;
-                     
-                     // If there was an occupant, they are forced to next base
-                     if (occupant) {
-                         const nextBase = baseToOccupy + 1;
-                         if (nextBase > 3) {
-                             runsFromPush++;
-                             scoredFromPush.push(occupant.name);
-                         } else {
-                             pushRunner(nextBase, occupant);
-                         }
-                     }
-                }
-                
-                // BUT wait, that logic is for a Walk (force).
-                // On a HIT, the rule is:
-                // 1. Batter is placed at [hitType].
-                // 2. IF a runner was at [hitType] OR was pushed into it, they move forward.
-                // 3. Runners AHEAD of the push who are NOT forced stay put (unless you manually move them).
-                
-                // Example: Runner on 2nd. Batter hits Single (to 1st).
-                // Batter -> 1st.
-                // Runner at 2nd is NOT forced by 1st. Stays at 2nd.
-                // Correct.
-                
-                // Example: Runner on 1st. Batter hits Single (to 1st).
-                // Batter -> 1st.
-                // Runner at 1st is forced to 2nd.
-                // Runner at 2nd (if any) is forced to 3rd.
-                
-                // Let's implement this logic:
-                // We start with the batter at `hitType`.
-                // We check `originalRunners[hitType]`. If exists, they must move to `hitType+1`.
-                // We check `originalRunners[hitType+1]`. If exists AND we are pushing into it, they move to `hitType+2`.
-                
-                // Copy non-forced runners to finalBases first
-                for(let b=1; b<=3; b++) {
-                    if (originalRunners[b] && b > hitType) {
-                         // Runners ahead of the hit who are not immediately displaced *might* stay put.
-                         // We will overwrite them if a push comes through.
-                         finalBases[b] = originalRunners[b];
-                    }
-                }
-                
-                // Start the push chain
-                let runnerBeingPushed = null;
-                let baseToPushTo = null;
-                
-                // 1. Batter takes base
-                // Check who is displaced
-                if (originalRunners[hitType]) {
-                    runnerBeingPushed = originalRunners[hitType];
-                    baseToPushTo = hitType + 1;
-                }
-                finalBases[hitType] = newRunner;
-                
-                // 2. Resolve push chain
-                while (runnerBeingPushed) {
-                    if (baseToPushTo > 3) {
-                        runsFromPush++;
-                        scoredFromPush.push(runnerBeingPushed.name);
-                        runnerBeingPushed = null; // Scored
-                    } else {
-                        // Check if someone is at the next base
-                        const nextOccupant = originalRunners[baseToPushTo];
+                // 2. Handle R1
+                if (r1) {
+                    // R1 is forced to 2nd
+                    gameState.bases[2] = r1;
+                    
+                    // 3. Handle R2 (Only forced if R1 moved to 2nd)
+                    if (r2) {
+                        // R2 is forced to 3rd
+                        gameState.bases[3] = r2;
                         
-                        // Place pushed runner
-                        finalBases[baseToPushTo] = runnerBeingPushed;
-                        
-                        if (nextOccupant) {
-                            // Continue chain
-                            runnerBeingPushed = nextOccupant;
-                            baseToPushTo++;
-                        } else {
-                            // Chain ends
-                            runnerBeingPushed = null;
+                        // 4. Handle R3 (Only forced if R2 moved to 3rd)
+                        if (r3) {
+                            // R3 is forced Home
+                            scoredRunners.push(r3.name);
                         }
+                    } else {
+                        // R2 wasn't there, so 2nd was open for R1.
+                        // If R3 exists, they stay at 3rd (no force from 2nd)
+                        if (r3) gameState.bases[3] = r3;
                     }
+                } else {
+                    // R1 wasn't there. 1st was open for Batter.
+                    // Existing runners stay put unless user manually moves them.
+                    if (r2) gameState.bases[2] = r2;
+                    if (r3) gameState.bases[3] = r3;
                 }
             }
-            // --- END RE-FIXED PUSH LOGIC ---
 
-            gameState.bases = finalBases;
-
-            if (runsFromPush > 0) {
-                // Log runs one by one
-                scoredFromPush.forEach(name => addRuns(1, name, true));
+            if (scoredRunners.length > 0) {
+                scoredRunners.forEach(name => addRuns(1, name, true));
             }
             updateBases();
             handleNextBatter();
         }
-        // --- END NEW HIT LOGIC ---
+        // --- END CORRECTED HIT PUSH LOGIC ---
 
 
         // --- Roster & Batting Order UI ---
@@ -1761,9 +1715,45 @@ function setupBaseActions() {
         DOMElements.forceOutNoBtn.addEventListener('click', () => handleForceOut(false));
 
         DOMElements.btnEndGame.addEventListener('click', () => {
-             if(confirm("Are you sure you want to end the game?")) {
-                 window.location.reload();
-             }
+             // Show the custom modal instead of confirm()
+             showModal(DOMElements.endGameModal);
+        });
+        
+        // --- Event Listeners for Custom End Game Modal ---
+        document.getElementById('end-game-yes').addEventListener('click', () => {
+             // Reset Game State vars
+             gameState.homeScore = 0;
+             gameState.awayScore = 0;
+             gameState.inning = 1;
+             gameState.topOfInning = true;
+             gameState.balls = STARTING_BALLS;
+             gameState.strikes = STARTING_STRIKES;
+             gameState.outs = 0;
+             gameState.runsThisInning = 0;
+             gameState.runsThisPlay = 0;
+             gameState.runnerInningCounter = 0;
+             gameState.bases = { 1: null, 2: null, 3: null };
+             
+             // Reset Batter Indexes
+             gameState.currentBatterIndex = { traditional: 0, male: 0, female: 0 };
+             
+             // Clear Log
+             gameState.gameLog = [];
+             DOMElements.gameLogList.innerHTML = '';
+             
+             // Update UI
+             updateScoreboard();
+             updateBases();
+             renderBattingOrder();
+             
+             hideAllModals();
+             // Re-prompt for side
+             showModal(DOMElements.userTeamModal);
+             addLogEntry("New Game Started.");
+        });
+
+        document.getElementById('end-game-no').addEventListener('click', () => {
+            hideAllModals();
         });
 
         function init() {
