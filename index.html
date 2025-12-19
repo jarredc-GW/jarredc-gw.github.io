@@ -137,7 +137,7 @@
             <p class="text-sm text-gray-500 mt-4 text-center">"Traditional" requires M/F alternate order.<br>"Bat the Wheel" uses separate M/F lists.</p>
         </div>
 
-        <!-- "Who Bats First?" Modal -->
+        <!-- "Who Bats First?" Modal (Hidden by default) -->
         <div id="who-bats-first-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Who Bats First?</h2>
             <div class="space-y-4">
@@ -150,7 +150,7 @@
             </div>
         </div>
 
-        <!-- "Select Your Team" Modal -->
+        <!-- "Select Your Team" Modal (Hidden by default) -->
         <div id="user-team-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Which team are you?</h2>
             <div class="space-y-4">
@@ -163,7 +163,7 @@
             </div>
         </div>
 
-        <!-- "Hit Type" Modal -->
+        <!-- "Hit Type" Modal (Hidden by default) -->
         <div id="hit-type-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Select Hit Type</h2>
             <div class="grid grid-cols-2 gap-4">
@@ -219,7 +219,7 @@
             </div>
         </div>
 
-        <!-- "Force Out" Modal -->
+        <!-- "Force Out" Modal (Hidden by default) -->
         <div id="force-out-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">3rd Out Recorded</h2>
             <p class="text-center text-gray-700 mb-6">A run scored on the same play. Was the 3rd out a <span class="font-bold">force out</span>?</p>
@@ -414,13 +414,8 @@
 
     <script type="module">
         // --- Firebase Config ---
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        
         const firebaseConfig = {
             apiKey: "AIzaSyBN9HfXy4k2HIVGklUtk5fMA8yyX9RZH2g",
             authDomain: "softball-scorecard.firebaseapp.com",
@@ -430,14 +425,9 @@
             appId: "1:749570093852:web:d1f4ad5e1261637dfd40d9",
             measurementId: "G-27TEBB943P"
         };
-
-        // Use your project ID as the app ID
         const appId = firebaseConfig.projectId;
-        // ------------------------------------------
-
         
         // --- Firebase Imports ---
-        // We initialize app from your pasted code
         import { 
             getAuth, 
             signInAnonymously, 
