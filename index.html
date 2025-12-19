@@ -350,11 +350,13 @@
                                         <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
                                         <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
                                         <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
+                                        <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="text-xs font-medium text-gray-500 uppercase">Strikes</div>
                                     <div class="flex space-x-1 mt-1">
+                                        <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
                                         <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
                                         <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
                                     </div>
@@ -412,13 +414,8 @@
 
     <script type="module">
         // --- Firebase Config ---
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        
         const firebaseConfig = {
             apiKey: "AIzaSyBN9HfXy4k2HIVGklUtk5fMA8yyX9RZH2g",
             authDomain: "softball-scorecard.firebaseapp.com",
@@ -428,14 +425,9 @@
             appId: "1:749570093852:web:d1f4ad5e1261637dfd40d9",
             measurementId: "G-27TEBB943P"
         };
-
-        // Use your project ID as the app ID
         const appId = firebaseConfig.projectId;
-        // ------------------------------------------
-
         
         // --- Firebase Imports ---
-        // We initialize app from your pasted code
         import { 
             getAuth, 
             signInAnonymously, 
@@ -563,7 +555,10 @@
             gameLogToggleBtn: document.getElementById('game-log-toggle-btn'),
             gameLogToggleContent: document.getElementById('game-log-toggle-content'),
             gameLogList: document.getElementById('game-log-list'),
-            baseActionButtons: document.querySelectorAll('.base-action-btn')
+            baseActionButtons: document.querySelectorAll('.base-action-btn'),
+            // --- NEW: Select the cancel button by class within the modal for robustness
+            hitTypeButtons: document.querySelectorAll('.hit-type-btn'),
+            cancelHitButton: document.getElementById('cancel-hit'),
         };
         
         // --- Game Log Functions ---
@@ -1063,7 +1058,7 @@
             
             // --- UPDATED to include + button ---
             card.innerHTML = `
-                <span class="font-medium text-sm text-gray-800">${genderIcon} ${pos}${player.name} ${num}</span>
+                <span class="font-medium text-sm text-gray-800">${genderIcon} ${num}${player.name} ${pos}</span>
                 <div class="flex space-x-1">
                     <button data-id="${player.id}" class="add-player-to-order text-green-600 hover:text-green-800 font-bold text-lg px-2 rounded-md hover:bg-green-100" title="Add to batting order">+</button>
                     <button data-id="${player.id}" class="remove-player text-red-500 hover:text-red-700 font-bold text-lg px-2 rounded-md hover:bg-red-100" title="Remove from roster">&times;</button>
@@ -1114,7 +1109,7 @@
             const pos = player.position ? `${player.position} - ` : '';
             
             card.innerHTML = `
-                <span class="font-medium text-sm text-gray-800">${genderIcon} ${pos}${player.name} ${num}</span>
+                <span class="font-medium text-sm text-gray-800">${genderIcon} ${num}${player.name} ${pos}</span>
             `;
             return card;
         }
@@ -1746,6 +1741,24 @@ function setupBaseActions() {
                 }
             }
         });
+        
+        // --- Event Listeners for HIT Buttons (Single, Double, etc.) ---
+        DOMElements.hitTypeButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const hitType = parseInt(e.currentTarget.dataset.hitType, 10);
+                const batter = getCurrentBatter();
+                advanceRunnersOnHit(batter, hitType); 
+            });
+        });
+
+        // --- Event Listener for Cancel Hit Button ---
+        DOMElements.cancelHitButton.addEventListener('click', () => {
+            hideAllModals();
+        });
+        
+        // --- Event Listeners for Force Out Modal ---
+        DOMElements.forceOutYesBtn.addEventListener('click', () => handleForceOut(true));
+        DOMElements.forceOutNoBtn.addEventListener('click', () => handleForceOut(false));
 
         DOMElements.btnEndGame.addEventListener('click', () => {
              if(confirm("Are you sure you want to end the game?")) {
@@ -1764,7 +1777,7 @@ function setupBaseActions() {
         }
 
         document.addEventListener('DOMContentLoaded', init);
-        console.log("Version 3 loaded.");
+        console.log("Version 2 loaded.");
     </script>
 </body>
 </html>
