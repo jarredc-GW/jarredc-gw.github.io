@@ -137,7 +137,7 @@
             <p class="text-sm text-gray-500 mt-4 text-center">"Traditional" requires M/F alternate order.<br>"Bat the Wheel" uses separate M/F lists.</p>
         </div>
 
-        <!-- "Who Bats First?" Modal (Hidden by default) -->
+        <!-- "Who Bats First?" Modal -->
         <div id="who-bats-first-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Who Bats First?</h2>
             <div class="space-y-4">
@@ -150,7 +150,7 @@
             </div>
         </div>
 
-        <!-- "Select Your Team" Modal (Hidden by default) -->
+        <!-- "Select Your Team" Modal -->
         <div id="user-team-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Which team are you?</h2>
             <div class="space-y-4">
@@ -163,7 +163,7 @@
             </div>
         </div>
 
-        <!-- "Hit Type" Modal (Hidden by default) -->
+        <!-- "Hit Type" Modal -->
         <div id="hit-type-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Select Hit Type</h2>
             <div class="grid grid-cols-2 gap-4">
@@ -219,7 +219,7 @@
             </div>
         </div>
 
-        <!-- "Force Out" Modal (Hidden by default) -->
+        <!-- "Force Out" Modal -->
         <div id="force-out-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">3rd Out Recorded</h2>
             <p class="text-center text-gray-700 mb-6">A run scored on the same play. Was the 3rd out a <span class="font-bold">force out</span>?</p>
@@ -414,8 +414,13 @@
 
     <script type="module">
         // --- Firebase Config ---
+        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
             apiKey: "AIzaSyBN9HfXy4k2HIVGklUtk5fMA8yyX9RZH2g",
             authDomain: "softball-scorecard.firebaseapp.com",
@@ -425,9 +430,14 @@
             appId: "1:749570093852:web:d1f4ad5e1261637dfd40d9",
             measurementId: "G-27TEBB943P"
         };
+
+        // Use your project ID as the app ID
         const appId = firebaseConfig.projectId;
+        // ------------------------------------------
+
         
         // --- Firebase Imports ---
+        // We initialize app from your pasted code
         import { 
             getAuth, 
             signInAnonymously, 
@@ -1500,7 +1510,67 @@
             }
         }
 
+function setupBaseActions() {
+            // 1. Clicking the base itself opens the modal
+            Object.keys(DOMElements.bases).forEach(baseNumStr => {
+                const baseNum = parseInt(baseNumStr, 10);
+                DOMElements.bases[baseNum].addEventListener('click', () => {
+                    const runner = gameState.bases[baseNum];
+                    if (runner) {
+                        // Runner is present, show context menu
+                        if(baseNum === 1) showModal(DOMElements.baseContextModal1);
+                        else if(baseNum === 2) showModal(DOMElements.baseContextModal2);
+                        else if(baseNum === 3) showModal(DOMElements.baseContextModal3);
+                    }
+                });
+            });
 
+            // 2. Clicking buttons inside the modals
+            DOMElements.baseActionButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const action = e.currentTarget.dataset.action;
+                    // Find parent modal to know which base this is for
+                    const modal = e.currentTarget.closest('div[id^="base-context-modal-"]');
+                    const currentBaseNum = parseInt(modal.id.split('-').pop(), 10);
+                    
+                    if (action === 'cancel') {
+                        hideAllModals();
+                        return;
+                    }
+
+                    const runner = gameState.bases[currentBaseNum];
+                    if (!runner) {
+                        hideAllModals();
+                        return;
+                    }
+                    
+                    // Remove runner from current base
+                    gameState.bases[currentBaseNum] = null;
+
+                    if (action === 'move') {
+                        const targetBaseNum = parseInt(e.currentTarget.dataset.base, 10);
+                        
+                        // Safety check: if target base is occupied, score the occupant to prevent data loss
+                        if (gameState.bases[targetBaseNum]) {
+                           addRuns(1, gameState.bases[targetBaseNum].name, true);
+                        }
+                        
+                        gameState.bases[targetBaseNum] = runner;
+                        addLogEntry(`${runner.name} manual move to ${targetBaseNum}.`, 'info');
+                    } 
+                    else if (action === 'score') {
+                        addRuns(1, runner.name, true);
+                    }
+                    else if (action === 'out') {
+                        // Record the out
+                        addOut(`${runner.name} out on base.`);
+                    }
+                    
+                    updateBases();
+                    hideAllModals();
+                });
+            });
+        }
         // --- Base click handlers ---
         function setupBaseClickListeners() {
             Object.keys(DOMElements.bases).forEach(baseNumStr => {
@@ -1588,6 +1658,29 @@
                 DOMElements.userIdDisplay.textContent = 'Error';
             }
         }
+        
+        function setupRosterListener() {
+            if (!rosterCollectionRef) return;
+
+            // Stop any previous listener
+            unsubscribeRoster();
+            
+            console.log("Setting up roster listener at:", rosterCollectionRef.path);
+            
+            unsubscribeRoster = onSnapshot(rosterCollectionRef, (snapshot) => {
+                console.log("Roster data received from Firestore.");
+                const newRoster = [];
+                snapshot.forEach((doc) => {
+                    newRoster.push({ id: doc.id, ...doc.data() });
+                });
+                gameState.roster = newRoster;
+                renderRoster();
+                // When roster reloads, re-render batting order to check for + buttons
+                renderBattingOrder();
+            }, (error) => {
+                console.error("Error with roster snapshot: ", error);
+            });
+        }
 
         // --- Roster Toggle ---
         function handleRosterToggle() {
@@ -1600,6 +1693,14 @@
 
         // --- FIX: Unified handleGameLogToggle usage ---
         DOMElements.gameLogToggleBtn.onclick = handleGameLogToggle;
+        
+        // --- BUTTON HANDLERS ---
+        DOMElements.modeTraditionalBtn.addEventListener('click', handleGameModeSelect);
+        DOMElements.modeWheelBtn.addEventListener('click', handleGameModeSelect);
+        DOMElements.startMaleBtn.addEventListener('click', handleWhoBatsFirst);
+        DOMElements.startFemaleBtn.addEventListener('click', handleWhoBatsFirst);
+        DOMElements.teamHomeBtn.addEventListener('click', handleUserTeamSelect);
+        DOMElements.teamAwayBtn.addEventListener('click', handleUserTeamSelect);
 
         function init() {
             updateScoreboard();
