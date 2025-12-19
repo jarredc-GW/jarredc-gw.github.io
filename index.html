@@ -1700,6 +1700,59 @@ function setupBaseActions() {
         DOMElements.teamHomeBtn.addEventListener('click', handleUserTeamSelect);
         DOMElements.teamAwayBtn.addEventListener('click', handleUserTeamSelect);
 
+        // --- MISSING EVENT LISTENERS RESTORED ---
+        DOMElements.addPlayerForm.addEventListener('submit', handleRosterSubmit);
+        
+        DOMElements.btnWalk.addEventListener('click', () => {
+            const batter = getCurrentBatter();
+            advanceRunnersOnWalk(batter);
+            handleNextBatter();
+        });
+
+        DOMElements.btnHit.addEventListener('click', () => {
+            showModal(DOMElements.hitTypeModal);
+        });
+
+        DOMElements.btnOut.addEventListener('click', () => {
+            const batter = getCurrentBatter();
+            const batterName = getBatterName(batter);
+            const isThirdOut = addOut(`${batterName} is out.`); 
+            if (!isThirdOut) {
+                handleNextBatter();
+            }
+        });
+
+        DOMElements.btnAddBall.addEventListener('click', () => {
+            if (gameState.balls < 3) {
+                gameState.balls++;
+                updateScoreboard();
+            } else {
+                const batter = getCurrentBatter();
+                advanceRunnersOnWalk(batter);
+                handleNextBatter();
+            }
+        });
+
+        DOMElements.btnAddStrike.addEventListener('click', () => {
+             if (gameState.strikes < 2) {
+                gameState.strikes++;
+                updateScoreboard();
+            } else {
+                const batter = getCurrentBatter();
+                const batterName = getBatterName(batter);
+                const isThirdOut = addOut(`${batterName} strikes out.`);
+                 if (!isThirdOut) {
+                    handleNextBatter();
+                }
+            }
+        });
+
+        DOMElements.btnEndGame.addEventListener('click', () => {
+             if(confirm("Are you sure you want to end the game?")) {
+                 window.location.reload();
+             }
+        });
+
         function init() {
             updateScoreboard();
             updateBases();
