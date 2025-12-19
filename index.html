@@ -31,7 +31,6 @@
         }
         .baseball-diamond {
             width: 100%;
-            /* max-width: 500px; */ /* Allow to fill container */
             aspect-ratio: 1 / 1;
             position: relative;
         }
@@ -51,7 +50,7 @@
         }
         .base-label {
             position: absolute;
-            font-size: clamp(0.6rem, 2vw, 0.75rem); /* Responsive font */
+            font-size: clamp(0.6rem, 2vw, 0.75rem);
             font-weight: 500;
             color: #4b5563;
             bottom: -20px;
@@ -60,14 +59,14 @@
             white-space: nowrap;
         }
         .base.active .base-icon {
-            fill: #3b82f6; /* Blue */
+            fill: #3b82f6;
         }
         .base-runner-name {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: clamp(0.6rem, 2vw, 0.75rem); /* Responsive font */
+            font-size: clamp(0.6rem, 2vw, 0.75rem);
             font-weight: 700;
             color: white;
             padding: 2px 5px;
@@ -77,38 +76,44 @@
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 120%;
-            display: none; /* Hidden by default */
+            display: none;
             z-index: 10;
         }
         .base.active .base-runner-name {
-            display: block; /* Shown when base is active */
+            display: block;
         }
 
         /* --- FINAL BASE POSITIONS --- */
         #home-plate { bottom: 5%; left: 42.5%; }
-        #home-plate .base-label { bottom: -25px; } /* Home label is lower */
-        
-        #first-base { bottom: 42.5%; right: 18.75%; }
+        #home-plate .base-label { bottom: -25px; }
+        #first-base { bottom: 42.5%; right: 6.75%; }
         #first-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
-
         #second-base { top: 7.5%; left: 42.5%; } 
         #second-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
-
-        #third-base { bottom: 42.5%; left: 18.75%; }
+        #third-base { bottom: 42.5%; left: 6.75%; }
         #third-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
-        /* --- END FINAL BASE POSITIONS --- */
 
-        /* Prevent text selection */
         .prevent-select {
-            -webkit-user-select: none; /* Safari */
-            -ms-user-select: none; /* IE 10 and IE 11 */
-            user-select: none; /* Standard syntax */
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        /* Roster Toggle Transition */
         #roster-toggle-content, #game-log-toggle-content {
             transition: all 0.3s ease-in-out;
             overflow: hidden;
+        }
+        
+        /* Batting Indicator Classes */
+        .batting-current {
+            border-left: 4px solid #10b981;
+            background-color: #f0fdf4;
+        }
+        .batting-on-deck {
+            border-left: 4px solid #f59e0b;
+            background-color: #fffbeb;
+        }
+        .batting-in-hole {
+            border-left: 4px solid #fcd34d;
         }
     </style>
 </head>
@@ -131,7 +136,7 @@
             <p class="text-sm text-gray-500 mt-4 text-center">"Traditional" requires M/F alternate order.<br>"Bat the Wheel" uses separate M/F lists.</p>
         </div>
 
-        <!-- "Who Bats First?" Modal (Hidden by default) -->
+        <!-- "Who Bats First?" Modal -->
         <div id="who-bats-first-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Who Bats First?</h2>
             <div class="space-y-4">
@@ -144,7 +149,7 @@
             </div>
         </div>
 
-        <!-- "Select Your Team" Modal (Hidden by default) -->
+        <!-- "Select Your Team" Modal -->
         <div id="user-team-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Which team are you?</h2>
             <div class="space-y-4">
@@ -157,7 +162,7 @@
             </div>
         </div>
 
-        <!-- "Hit Type" Modal (Hidden by default) -->
+        <!-- "Hit Type" Modal -->
         <div id="hit-type-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">Select Hit Type</h2>
             <div class="grid grid-cols-2 gap-4">
@@ -213,7 +218,7 @@
             </div>
         </div>
 
-        <!-- "Force Out" Modal (Hidden by default) -->
+        <!-- "Force Out" Modal -->
         <div id="force-out-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">3rd Out Recorded</h2>
             <p class="text-center text-gray-700 mb-6">A run scored on the same play. Was the 3rd out a <span class="font-bold">force out</span>?</p>
@@ -230,14 +235,11 @@
     </div>
 
     <!-- Main Content -->
-    <!-- On medium screens and up, use a fixed height layout -->
     <div class="flex flex-col md:flex-row md:h-screen md:overflow-hidden">
         
-        <!-- Left Column: Rosters & Batting Order -->
-        <!-- Takes full width on mobile, 1/2 on desktop. Scrolls vertically. -->
-        <div class="w-full md:w-1/2 p-4 flex flex-col h-auto md:h-full overflow-y-auto bg-white shadow-lg">
+        <!-- Left Column -->
+        <div class="w-full md:w-1/2 p-4 flex flex-col h-auto md:h-full overflow-y-auto bg-white shadow-lg z-10">
             
-            <!-- Roster Management -->
             <div class="mb-4">
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="text-xl font-bold text-gray-800">Roster Management</h2>
@@ -247,112 +249,86 @@
                     <form id="add-player-form" class="bg-gray-50 p-4 rounded-lg shadow-inner space-y-3 mb-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label for="player-name" class="block text-sm font-medium text-gray-700">Name</label>
-                                <input type="text" id="player-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                                <label class="block text-sm font-medium text-gray-700">Name</label>
+                                <input type="text" id="player-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
                             </div>
                             <div>
-                                <label for="player-number" class="block text-sm font-medium text-gray-700">Number</label>
-                                <input type="text" id="player-number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label class="block text-sm font-medium text-gray-700">Number</label>
+                                <input type="text" id="player-number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
                             </div>
                         </div>
                         <div>
-                            <label for="player-position" class="block text-sm font-medium text-gray-700">Position</label>
-                            <input type="text" id="player-position" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <label class="block text-sm font-medium text-gray-700">Position</label>
+                            <input type="text" id="player-position" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Gender</label>
                             <div class="mt-1 flex space-x-4">
                                 <label class="flex items-center">
-                                    <input type="radio" id="gender-male" name="gender" value="male" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" checked>
+                                    <input type="radio" id="gender-male" name="gender" value="male" checked>
                                     <span class="ml-2 text-sm text-gray-700">Male</span>
                                 </label>
                                 <label class="flex items-center">
-                                    <input type="radio" id="gender-female" name="gender" value="female" class="focus:ring-pink-500 h-4 w-4 text-pink-600 border-gray-300">
+                                    <input type="radio" id="gender-female" name="gender" value="female">
                                     <span class="ml-2 text-sm text-gray-700">Female</span>
                                 </label>
                             </div>
                         </div>
-                        <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <button type="submit" class="w-full py-2 px-4 rounded-md text-white bg-blue-600 hover:bg-blue-700">
                             Add Player to Roster
                         </button>
                     </form>
                     
-                    <!-- Draggable Roster -->
                     <div class="flex-shrink-0">
                         <h3 class="text-lg font-semibold text-gray-700 mb-2">My Team Roster</h3>
-                        <div id="roster-list" class="bg-gray-100 p-3 rounded-lg min-h-[100px] shadow-inner space-y-2">
-                            <!-- Player cards will be dynamically inserted here -->
-                        </div>
+                        <div id="roster-list" class="bg-gray-100 p-3 rounded-lg min-h-[100px] shadow-inner space-y-2"></div>
                     </div>
                 </div>
             </div>
             
-            <!-- Batting Order -->
-            <!-- flex-grow and min-h-0 are key for child element scrolling -->
             <div class="flex-grow flex flex-col min-h-0">
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">Today's Batting Order</h3>
                 
-                <!-- "Traditional" Batting Order UI (Default) -->
                 <div id="traditional-order-container" class="flex-grow flex flex-col min-h-0">
-                    <div id="batting-order-list" class="bg-gray-100 p-3 rounded-lg shadow-inner flex-grow min-h-[150px] space-y-2 overflow-y-auto border-2 border-transparent">
-                        <!-- Batting order cards will be dynamically inserted here -->
-                    </div>
+                    <div id="batting-order-list" class="bg-gray-100 p-3 rounded-lg shadow-inner flex-grow min-h-[150px] space-y-2 overflow-y-auto"></div>
                     <p id="order-warning" class="text-red-600 text-sm font-medium text-center mt-2 hidden">Batting order must alternate male/female.</p>
                 </div>
 
-                <!-- "Bat the Wheel" Batting Order UI (Hidden by default) -->
                 <div id="wheel-order-container" class="hidden flex-grow md:grid md:grid-cols-2 md:gap-4 min-h-0">
                     <div class="flex-grow flex flex-col min-h-0">
                         <h4 class="text-md font-semibold text-center text-blue-700 mb-2">Males</h4>
-                        <div id="batting-order-list-male" class="bg-blue-50 p-3 rounded-lg shadow-inner flex-grow min-h-[150px] space-y-2 overflow-y-auto border-2 border-transparent">
-                            <!-- Male batting order cards -->
-                        </div>
+                        <div id="batting-order-list-male" class="bg-blue-50 p-3 rounded-lg shadow-inner flex-grow overflow-y-auto space-y-2"></div>
                     </div>
                     <div class="flex-grow flex flex-col min-h-0 mt-4 md:mt-0">
                         <h4 class="text-md font-semibold text-center text-pink-700 mb-2">Females</h4>
-                        <div id="batting-order-list-female" class="bg-pink-50 p-3 rounded-lg shadow-inner flex-grow min-h-[150px] space-y-2 overflow-y-auto border-2 border-transparent">
-                            <!-- Female batting order cards -->
-                        </div>
+                        <div id="batting-order-list-female" class="bg-pink-50 p-3 rounded-lg shadow-inner flex-grow overflow-y-auto space-y-2"></div>
                     </div>
                 </div>
-
             </div>
 
-            <!-- Game Log Section -->
             <div class="mt-4">
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="text-xl font-bold text-gray-800">Game Log</h2>
                     <button id="game-log-toggle-btn" class="px-3 py-1 text-lg font-bold bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">+</button>
                 </div>
-                <div id="game-log-toggle-content" class="overflow-hidden" style="max-height: 0px; opacity: 0; margin-top: 0px;">
-                    <div id="game-log-list" class="bg-gray-100 p-3 rounded-lg min-h-[100px] max-h-[200px] shadow-inner space-y-2 overflow-y-auto text-sm">
-                        <!-- Log entries will be dynamically inserted here -->
-                    </div>
+                <div id="game-log-toggle-content" style="max-height: 0px; opacity: 0;">
+                    <div id="game-log-list" class="bg-gray-100 p-3 rounded-lg max-h-[200px] shadow-inner space-y-2 overflow-y-auto text-sm"></div>
                 </div>
             </div>
 
-            <p class="text-xs text-gray-400 mt-2 text-center">Your User ID (for data sync): <span id="user-id" class="font-mono">loading...</span></p>
-
+            <p class="text-xs text-gray-400 mt-2 text-center">User ID: <span id="user-id" class="font-mono">loading...</span></p>
         </div>
         
-        <!-- Right Column: Scoreboard, Controls & Diamond -->
-        <!-- Takes full width on mobile, 1/2 on desktop. Contains child elements. -->
+        <!-- Right Column -->
         <div class="w-full md:w-1/2 p-4 flex flex-col h-auto md:h-full">
-            
-            <!-- Top Right Section: 1/3 height. Contains Scoreboard + Controls -->
             <div class="w-full md:h-1/3 flex flex-col md:flex-row gap-4 mb-4">
-                
-                <!-- Scoreboard (Left part of top-right) -->
                 <div class="w-full md:w-1/2 bg-white rounded-lg shadow-xl p-4">
-                    <!-- Scoreboard header removed -->
-                    <!-- Scores -->
-                    <div class="grid grid-cols-3 gap-2 mb-3 text-center items-center mt-2"> <!-- Added mt-2 for spacing -->
+                    <div class="grid grid-cols-3 gap-2 mb-3 text-center items-center mt-2">
                         <div>
                             <div id="home-label" class="text-md font-semibold text-blue-700">HOME</div>
                             <div id="home-score" class="text-4xl font-bold text-blue-700">0</div>
                         </div>
-                        <!-- Inning -->
-                        <div id="inning-toggle" class="cursor-pointer" title="Click to toggle Top/Bottom">
+                        <div id="inning-toggle" class="cursor-pointer">
                             <div class="text-xs font-medium text-gray-500">INNING</div>
                             <div class="flex items-center space-x-1 justify-center">
                                 <div id="inning" class="text-2xl font-semibold">1</div>
@@ -364,129 +340,76 @@
                             <div id="away-score" class="text-4xl font-bold text-gray-700">0</div>
                         </div>
                     </div>
-                    
-                    <!-- Counters -->
                     <div class="p-3 bg-gray-100 rounded-lg">
                         <div class="grid grid-cols-2 gap-4">
-                            <!-- Balls & Strikes -->
                             <div class="space-y-2">
-                                <!-- Balls -->
                                 <div>
-                                    <div class="text-xs font-medium text-gray-500">BALLS</div>
-                                    <div class="flex space-x-1 justify-start mt-1">
-                                        <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
+                                    <div class="text-xs font-medium text-gray-500 uppercase">Balls</div>
+                                    <div class="flex space-x-1 mt-1">
                                         <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
                                         <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
                                         <span class="ball w-4 h-4 bg-gray-300 rounded-full"></span>
                                     </div>
                                 </div>
-                                <!-- Strikes -->
                                 <div>
-                                    <div class="text-xs font-medium text-gray-500">STRIKES</div>
-                                    <div class="flex space-x-1 justify-start mt-1">
+                                    <div class="text-xs font-medium text-gray-500 uppercase">Strikes</div>
+                                    <div class="flex space-x-1 mt-1">
                                         <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
                                         <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
                                         <span class="strike w-4 h-4 bg-gray-300 rounded-full"></span>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Outs & Runs -->
                             <div class="space-y-2">
-                                <!-- Outs -->
                                 <div>
-                                    <div class="text-xs font-medium text-gray-500">OUTS</div>
-                                    <div class="flex space-x-1 justify-start mt-1">
+                                    <div class="text-xs font-medium text-gray-500 uppercase">Outs</div>
+                                    <div class="flex space-x-1 mt-1">
                                         <span class="out w-4 h-4 bg-gray-300 rounded-full cursor-pointer"></span>
                                         <span class="out w-4 h-4 bg-gray-300 rounded-full cursor-pointer"></span>
                                         <span class="out w-4 h-4 bg-gray-300 rounded-full cursor-pointer"></span>
                                     </div>
                                 </div>
-                                <!-- Runs this Inning -->
                                 <div>
-                                    <div class="text-xs font-medium text-gray-500">RUNS</div>
-                                    <div id="runs-this-inning" class="text-xl font-semibold text-green-600 text-left">0</div>
+                                    <div class="text-xs font-medium text-gray-500 uppercase">Runs</div>
+                                    <div id="runs-this-inning" class="text-xl font-semibold text-green-600">0</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Batting Controls (Right part of top-right) -->
                 <div class="w-full md:w-1/2 bg-white rounded-lg shadow-xl p-4 flex flex-col justify-between">
                     <div class="grid grid-cols-3 gap-2">
-                        <button id="btn-walk" class="py-2 px-3 text-md font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">Walk</button>
-                        <button id="btn-hit" class="py-2 px-3 text-md font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">Hit</button>
-                        <button id="btn-out" class="py-2 px-3 text-md font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">Out</button>
+                        <button id="btn-walk" class="py-2 text-white bg-blue-600 rounded-lg">Walk</button>
+                        <button id="btn-hit" class="py-2 text-white bg-green-600 rounded-lg">Hit</button>
+                        <button id="btn-out" class="py-2 text-white bg-red-600 rounded-lg">Out</button>
                     </div>
                     <div class="grid grid-cols-2 gap-2 mt-2">
-                        <button id="btn-add-ball" class="w-full py-2 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors">Add Ball</button>
-                        <button id="btn-add-strike" class="w-full py-2 px-3 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors">Add Strike</button>
+                        <button id="btn-add-ball" class="py-2 text-white bg-blue-500 rounded-lg text-xs">Add Ball</button>
+                        <button id="btn-add-strike" class="py-2 text-white bg-red-500 rounded-lg text-xs">Add Strike</button>
                     </div>
-                    <button id="btn-end-game" class="w-full mt-2 py-2 px-3 text-md font-medium text-white bg-gray-700 rounded-lg hover:bg-gray-800 transition-colors">
-                        End Game
-                    </button>
+                    <button id="btn-end-game" class="w-full mt-2 py-2 text-white bg-gray-700 rounded-lg">End Game</button>
                 </div>
             </div>
             
-            <!-- Bottom Right Section: 2/3 height. Contains Diamond -->
-            <!-- flex-grow and min-h-0 are key to make the diamond container fill space -->
             <div class="w-full md:h-2/3 flex-grow min-h-0 flex items-center justify-center bg-white rounded-lg shadow-xl p-4 overflow-hidden relative">
-                <!-- Wrapper to maintain aspect ratio -->
-                <div class="w-full max-w-full h-full max-h-full relative">
-                    <div class="baseball-diamond absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-full max-h-full">
-                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="absolute inset-0">
-                            <!-- Infield Grass -->
+                <div class="w-full h-full relative">
+                    <div class="baseball-diamond absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <path d="M 50 10 L 90 50 L 50 90 L 10 50 Z" fill="#689f38" stroke="#a5d6a7" stroke-width="1"/>
-                            <!-- Baselines -->
                             <path d="M 50 90 L 90 50 L 50 10 L 10 50 Z" fill="none" stroke="#d2b48c" stroke-width="2"/>
-                            <!-- Pitcher's Mound -->
                             <circle cx="50" cy="50" r="8" fill="#d2b48c" opacity="0.6"/>
                         </svg>
-
-                        <!-- Home Plate -->
-                        <div id="home-plate" class="base">
-                            <svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0">
-                                <path d="M 10 10 L 90 10 L 90 50 L 50 90 L 10 50 Z"/>
-                            </svg>
-                            <span class="base-label">Home</span>
-                            <span class="base-runner-name"></span>
-                        </div>
-                        
-                        <!-- First Base -->
-                        <div id="first-base" class="base">
-                            <svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0">
-                                <path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/>
-                            </svg>
-                            <span class="base-label">First</span>
-                            <span class="base-runner-name"></span>
-                        </div>
-                        
-                        <!-- Second Base -->
-                        <div id="second-base" class="base">
-                            <svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0">
-                                <path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/>
-                            </svg>
-                            <span class="base-label">Second</span>
-                            <span class="base-runner-name"></span>
-                        </div>
-                        
-                        <!-- Third Base -->
-                        <div id="third-base" class="base">
-                            <svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0">
-                                <path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/>
-                            </svg>
-                            <span class="base-label">Third</span>
-                            <span class="base-runner-name"></span>
-                        </div>
+                        <div id="home-plate" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 10 10 L 90 10 L 90 50 L 50 90 L 10 50 Z"/></svg><span class="base-label">Home</span><span class="base-runner-name"></span></div>
+                        <div id="first-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">First</span><span class="base-runner-name"></span></div>
+                        <div id="second-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">Second</span><span class="base-runner-name"></span></div>
+                        <div id="third-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">Third</span><span class="base-runner-name"></span></div>
                     </div>
                 </div>
             </div>
-            
         </div>
     </div>
 
-    <!-- Firebase -->
     <script type="module">
         // --- Firebase Config ---
         // Import the functions you need from the SDKs you need
@@ -532,9 +455,20 @@
             setLogLevel
         } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
+        // --- Helper Functions Moved to Top ---
+        function showModal(el) {
+            DOMElements.modalOverlay.classList.remove('hidden');
+            [...DOMElements.modalOverlay.children].forEach(c => c.classList.add('hidden'));
+            el.classList.remove('hidden');
+        }
+
+        function hideAllModals() {
+            DOMElements.modalOverlay.classList.add('hidden');
+        }
+
         // --- Firebase Initialization ---
         let app, db, auth, userId, rosterCollectionRef;
-        let unsubscribeRoster = () => {}; // Function to stop the listener
+        let unsubscribeRoster = () => {}; 
         
         // --- App State ---
         let gameState = {
@@ -546,30 +480,18 @@
             strikes: 1, // Start with 1-1 count
             outs: 0,
             runsThisInning: 0,
-            runsThisPlay: 0, // --- NEW: Track runs for force out logic
-            runnerInningCounter: 0, // Counts runners per half-inning
-            bases: { 
-                1: null, // { name: "1 - John", originalNumber: 1, displayOrder: 1 }
-                2: null, 
-                3: null 
-            }, 
-            roster: [], // Local cache of { id, name, number, position, gender }
-            battingOrder: {
-                traditional: [], // { id, name, number, position, gender }
-                male: [],
-                female: []
-            },
-            currentBatterIndex: {
-                traditional: 0,
-                male: 0,
-                female: 0
-            },
-            gameMode: null, // 'traditional' or 'wheel'
-            userTeam: null, // 'home' or 'away'
-            nextToBat: null, // 'male' or 'female' for 'wheel' mode
+            runsThisPlay: 0,
+            runnerInningCounter: 0,
+            bases: { 1: null, 2: null, 3: null },
+            roster: [],
+            battingOrder: { traditional: [], male: [], female: [] },
+            currentBatterIndex: { traditional: 0, male: 0, female: 0 },
+            gameMode: null,
+            userTeam: null,
+            nextToBat: null,
             rosterMinimized: false,
-            gameLogMinimized: true, // Start with log minimized
-            gameLog: [], // Store log entries
+            gameLogMinimized: true,
+            gameLog: [],
         };
         const RUN_LIMIT = 6;
         const RUN_LIMIT_INNING = 5;
@@ -617,57 +539,44 @@
             battingOrderListFemale: document.getElementById('batting-order-list-female'),
             orderWarning: document.getElementById('order-warning'),
             traditionalContainer: document.getElementById('traditional-order-container'),
-            wheelContainer: document.getElementById('wheel-order-container'),
+            wheelOrderContainer: document.getElementById('wheel-order-container'),
             modalOverlay: document.getElementById('modal-overlay'),
             gameModeModal: document.getElementById('game-mode-modal'),
             whoBatsFirstModal: document.getElementById('who-bats-first-modal'),
             userTeamModal: document.getElementById('user-team-modal'),
             hitTypeModal: document.getElementById('hit-type-modal'),
-            // Base Context Modals
             baseContextModal1: document.getElementById('base-context-modal-1'),
             baseContextModal2: document.getElementById('base-context-modal-2'),
             baseContextModal3: document.getElementById('base-context-modal-3'),
-            baseActionButtons: document.querySelectorAll('.base-action-btn'),
-            // Force Out Modal
             forceOutModal: document.getElementById('force-out-modal'),
             forceOutYesBtn: document.getElementById('force-out-yes'),
             forceOutNoBtn: document.getElementById('force-out-no'),
-            
-            hitTypeButtons: document.querySelectorAll('.hit-type-btn'),
-            cancelHitButton: document.getElementById('cancel-hit'),
             modeTraditionalBtn: document.getElementById('mode-traditional'),
             modeWheelBtn: document.getElementById('mode-wheel'),
             startMaleBtn: document.getElementById('start-male'),
             startFemaleBtn: document.getElementById('start-female'),
             teamHomeBtn: document.getElementById('team-home'),
             teamAwayBtn: document.getElementById('team-away'),
-            
             userIdDisplay: document.getElementById('user-id'),
             rosterToggleBtn: document.getElementById('roster-toggle-btn'),
             rosterToggleContent: document.getElementById('roster-toggle-content'),
             gameLogToggleBtn: document.getElementById('game-log-toggle-btn'),
             gameLogToggleContent: document.getElementById('game-log-toggle-content'),
             gameLogList: document.getElementById('game-log-list'),
+            baseActionButtons: document.querySelectorAll('.base-action-btn')
         };
         
         // --- Game Log Functions ---
         function addLogEntry(message, type = 'info') {
-            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            const entry = { time, message, type };
-            gameState.gameLog.unshift(entry); // Add to beginning of array
-            
-            // Render new log entry
-            const logEl = document.createElement('div');
-            logEl.className = 'p-2 rounded bg-white shadow-sm';
-            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const entry = document.createElement('div');
+            entry.className = 'p-2 rounded bg-white shadow-sm';
             let colorClass = 'text-gray-700';
             if (type === 'run') colorClass = 'text-green-600 font-medium';
             if (type === 'out') colorClass = 'text-red-600 font-medium';
             if (type === 'inning') colorClass = 'text-blue-600 font-bold';
-
-            logEl.innerHTML = `<span class="font-mono text-xs text-gray-500">[${time}]</span> <span class="${colorClass}">${message}</span>`;
-            
-            DOMElements.gameLogList.prepend(logEl); // Add to top of list
+            entry.innerHTML = `<span class="font-mono text-xs text-gray-500">[${time}]</span> <span class="${colorClass}">${message}</span>`;
+            DOMElements.gameLogList.prepend(entry);
         }
 
         function handleGameLogToggle() {
@@ -678,9 +587,9 @@
                 DOMElements.gameLogToggleContent.style.marginTop = '0';
                 DOMElements.gameLogToggleBtn.textContent = '+';
             } else {
-                DOMElements.gameLogToggleContent.style.maxHeight = '200px'; // Set to max-height
+                DOMElements.gameLogToggleContent.style.maxHeight = '200px'; 
                 DOMElements.gameLogToggleContent.style.opacity = '1';
-                DOMElements.gameLogToggleContent.style.marginTop = ''; // Revert to default
+                DOMElements.gameLogToggleContent.style.marginTop = '';
                 DOMElements.gameLogToggleBtn.textContent = '-';
             }
         }
@@ -708,26 +617,26 @@
         }
 
         function updateCounter(elements, count, activeClass) {
-            elements.forEach((el, index) => {
-                el.classList.toggle(activeClass, index < count);
-                el.classList.toggle('bg-gray-300', index >= count);
+            elements.forEach((el, idx) => {
+                el.classList.toggle(activeClass, idx < count);
+                el.classList.toggle('bg-gray-300', idx >= count);
             });
         }
 
         function updateBases() {
             for (let i = 1; i <= 3; i++) {
-                const baseEl = DOMElements.bases[i];
-                const runnerNameEl = DOMElements.baseRunners[i];
-                const runner = gameState.bases[i]; // { name: "John", originalNumber: 1, displayOrder: 1 }
-
-                if (runner) {
-                    baseEl.classList.add('active');
-                    // Display name will now be "1 - John"
-                    runnerNameEl.textContent = `${runner.displayOrder} - ${runner.name}`;
-                } else {
-                    baseEl.classList.remove('active');
-                    runnerNameEl.textContent = '';
+                const runner = gameState.bases[i];
+                // --- DYNAMIC NUMBERING: Calculate runner label relative to runs scored ---
+                let runnersAhead = 0;
+                for (let b = i + 1; b <= 3; b++) {
+                     if (gameState.bases[b]) runnersAhead++;
                 }
+                
+                const dynamicNumber = gameState.runsThisInning + 1 + runnersAhead;
+                
+                DOMElements.bases[i].classList.toggle('active', !!runner);
+                // Use calculated dynamicNumber instead of stored displayOrder
+                DOMElements.baseRunners[i].textContent = runner ? `${dynamicNumber} - ${runner.name}` : '';
             }
         }
         
@@ -747,8 +656,7 @@
         function resetCounts() {
             gameState.balls = STARTING_BALLS;
             gameState.strikes = STARTING_STRIKES;
-            // --- BUG FIX: DO NOT RESET runsThisPlay HERE ---
-            // gameState.runsThisPlay = 0; 
+            // The runsThisPlay is intentionally NOT reset here, only in advanceHalfInning
             updateScoreboard();
         }
         
@@ -778,10 +686,13 @@
             const currentTeam = gameState.topOfInning ? 'Away' : 'Home';
             addLogEntry(`--- ${currentTeam} team 3 outs. ---`, 'inning');
             
+            // --- CRITICAL FIX 1: Advance batter index for the next half-inning ---
+            handleNextBatter(true); // Advance batter index only, skip count reset
+            
             gameState.outs = 0;
             gameState.runsThisInning = 0;
             gameState.runnerInningCounter = 0; // Reset for new half-inning
-            gameState.runsThisPlay = 0; // --- BUG FIX: Reset runsThisPlay HERE ---
+            gameState.runsThisPlay = 0; // --- RESET runsThisPlay HERE ONLY ---
             
             if (gameState.topOfInning) {
                 // Top of inning ends, switch to bottom
@@ -794,7 +705,7 @@
                 addLogEntry(`Start Top of Inning ${gameState.inning}.`, 'inning');
             }
             clearBases();
-            resetCounts();
+            resetCounts(); // Resets to 1-1
             updateScoreboard();
             highlightCurrentBatter(); // Highlight batter for the new half-inning
         }
@@ -985,7 +896,7 @@
             updateBases();
         }
         
-        // --- NEW "PUSH" HIT LOGIC (FIXED) ---
+        // --- NEW HIT "PUSH" LOGIC ---
         function advanceRunnersOnHit(batter, hitType) {
             const batterName = getBatterName(batter);
             const hitNames = ['Single', 'Double', 'Triple', 'Home Run'];
@@ -997,54 +908,131 @@
             const scoredRunners = [];
 
             // --- RE-FIXED PUSH LOGIC ---
-            // This logic only "pushes" runners if the batter's hit
-            // would land on an occupied base.
-            
             let runsFromPush = 0;
             const scoredFromPush = [];
-            
-            // Handle Home Run separately (clears all bases)
+            const finalBases = { 1: null, 2: null, 3: null };
+
+            // 1. Handle Home Run: Clear all bases and score everyone
             if (hitType === 4) {
-                // Batter scores
-                runsFromPush++;
-                scoredFromPush.push(newRunner.name);
-                // Existing runners score
                 for (let baseNum = 3; baseNum >= 1; baseNum--) {
                     if (gameState.bases[baseNum]) {
                         runsFromPush++;
                         scoredFromPush.push(gameState.bases[baseNum].name);
-                        gameState.bases[baseNum] = null; // Clear base
                     }
+                    gameState.bases[baseNum] = null; // Clear base
                 }
+                runsFromPush++;
+                scoredFromPush.push(newRunner.name); // Batter scores
+                gameState.bases = { 1: null, 2: null, 3: null }; // Ensure clear state
+                
             } else {
-                // --- Handle Single, Double, Triple ---
-                // Check for "push" chain starting from the batter
-                let currentRunner = newRunner;
-                let currentBase = hitType;
+                 // Place batter first on their hit base
+                finalBases[hitType] = newRunner;
+
+                // Process existing runners from 3rd down to 1st
+                // Only advance a runner if their base or the one they are forced to is taken by the "push" coming from behind
                 
-                while (currentBase < 4 && currentRunner) {
-                    const runnerOnBase = gameState.bases[currentBase];
-                    
-                    // Place the current runner on this base
-                    gameState.bases[currentBase] = currentRunner;
-                    
-                    if (runnerOnBase) {
-                        // This base was occupied. "Push" the runner who was here.
-                        currentRunner = runnerOnBase;
-                        currentBase++; // Check the next base
-                    } else {
-                        // This base was empty. The push chain stops.
-                        currentRunner = null;
+                // Let's model this as a chain reaction from the batter.
+                // Batter lands on [hitType].
+                // IF [hitType] was occupied, THAT runner is pushed to [hitType + 1].
+                // IF [hitType + 1] was occupied, THAT runner is pushed to [hitType + 2].
+                // ...and so on.
+
+                let currentPusher = newRunner;
+                let currentPusherBase = hitType;
+
+                // We need to know who was where originally
+                const originalRunners = { ...gameState.bases };
+
+                // Recursive push function
+                function pushRunner(baseToOccupy, pushingRunner) {
+                     // Check if someone is currently at baseToOccupy
+                     const occupant = originalRunners[baseToOccupy];
+                     
+                     // Place the pusher
+                     finalBases[baseToOccupy] = pushingRunner;
+                     
+                     // If there was an occupant, they are forced to next base
+                     if (occupant) {
+                         const nextBase = baseToOccupy + 1;
+                         if (nextBase > 3) {
+                             runsFromPush++;
+                             scoredFromPush.push(occupant.name);
+                         } else {
+                             pushRunner(nextBase, occupant);
+                         }
+                     }
+                }
+                
+                // BUT wait, that logic is for a Walk (force).
+                // On a HIT, the rule is:
+                // 1. Batter is placed at [hitType].
+                // 2. IF a runner was at [hitType] OR was pushed into it, they move forward.
+                // 3. Runners AHEAD of the push who are NOT forced stay put (unless you manually move them).
+                
+                // Example: Runner on 2nd. Batter hits Single (to 1st).
+                // Batter -> 1st.
+                // Runner at 2nd is NOT forced by 1st. Stays at 2nd.
+                // Correct.
+                
+                // Example: Runner on 1st. Batter hits Single (to 1st).
+                // Batter -> 1st.
+                // Runner at 1st is forced to 2nd.
+                // Runner at 2nd (if any) is forced to 3rd.
+                
+                // Let's implement this logic:
+                // We start with the batter at `hitType`.
+                // We check `originalRunners[hitType]`. If exists, they must move to `hitType+1`.
+                // We check `originalRunners[hitType+1]`. If exists AND we are pushing into it, they move to `hitType+2`.
+                
+                // Copy non-forced runners to finalBases first
+                for(let b=1; b<=3; b++) {
+                    if (originalRunners[b] && b > hitType) {
+                         // Runners ahead of the hit who are not immediately displaced *might* stay put.
+                         // We will overwrite them if a push comes through.
+                         finalBases[b] = originalRunners[b];
                     }
                 }
                 
-                // If the loop finished with a runner still in hand, they score
-                if (currentRunner) {
-                    runsFromPush++;
-                    scoredFromPush.push(currentRunner.name);
+                // Start the push chain
+                let runnerBeingPushed = null;
+                let baseToPushTo = null;
+                
+                // 1. Batter takes base
+                // Check who is displaced
+                if (originalRunners[hitType]) {
+                    runnerBeingPushed = originalRunners[hitType];
+                    baseToPushTo = hitType + 1;
+                }
+                finalBases[hitType] = newRunner;
+                
+                // 2. Resolve push chain
+                while (runnerBeingPushed) {
+                    if (baseToPushTo > 3) {
+                        runsFromPush++;
+                        scoredFromPush.push(runnerBeingPushed.name);
+                        runnerBeingPushed = null; // Scored
+                    } else {
+                        // Check if someone is at the next base
+                        const nextOccupant = originalRunners[baseToPushTo];
+                        
+                        // Place pushed runner
+                        finalBases[baseToPushTo] = runnerBeingPushed;
+                        
+                        if (nextOccupant) {
+                            // Continue chain
+                            runnerBeingPushed = nextOccupant;
+                            baseToPushTo++;
+                        } else {
+                            // Chain ends
+                            runnerBeingPushed = null;
+                        }
+                    }
                 }
             }
             // --- END RE-FIXED PUSH LOGIC ---
+
+            gameState.bases = finalBases;
 
             if (runsFromPush > 0) {
                 // Log runs one by one
@@ -1073,6 +1061,7 @@
             const num = player.number ? `(${player.number})` : '';
             const pos = player.position ? `${player.position} - ` : '';
             
+            // --- UPDATED to include + button ---
             card.innerHTML = `
                 <span class="font-medium text-sm text-gray-800">${genderIcon} ${pos}${player.name} ${num}</span>
                 <div class="flex space-x-1">
@@ -1089,6 +1078,7 @@
                 const card = createPlayerCard(player);
                 // Only roster list cards should have remove/add buttons
                 card.querySelector('.remove-player').addEventListener('click', handleRemovePlayer);
+                card.querySelector('.add-player-to-order').addEventListener('click', handleAddPlayerToOrder);
                 
                 // --- NEW LOGIC: Hide + if in lineup ---
                 const inTraditional = gameState.battingOrder.traditional.find(p => p.id === player.id);
@@ -1099,7 +1089,7 @@
                 if (inTraditional || inMale || inFemale) {
                     addButton.style.display = 'none'; // Hide the + button
                 } else {
-                    addButton.addEventListener('click', handleAddPlayerToOrder);
+                    addButton.style.display = 'inline-block'; // Show
                 }
                 // --- END NEW LOGIC ---
                 
@@ -1108,10 +1098,24 @@
         }
 
         function createBattingOrderCard(player) {
-            const card = createPlayerCard(player);
-            // Batting order cards don't get remove/add buttons
-            card.querySelector('.remove-player').remove();
-            card.querySelector('.add-player-to-order').remove();
+            const card = document.createElement('div');
+            // Use the same class structure as roster card for consistency
+            card.className = 'roster-card bg-white p-2 rounded-md shadow-sm flex justify-between items-center'; 
+            card.dataset.id = player.id;
+            card.dataset.gender = player.gender;
+            card.dataset.playerData = JSON.stringify(player);
+            card.draggable = true;
+
+            const genderIcon = player.gender === 'male' 
+                ? `<span class="font-bold text-blue-600">(M)</span>` 
+                : `<span class="font-bold text-pink-600">(F)</span>`;
+            
+            const num = player.number ? `(${player.number})` : '';
+            const pos = player.position ? `${player.position} - ` : '';
+            
+            card.innerHTML = `
+                <span class="font-medium text-sm text-gray-800">${genderIcon} ${pos}${player.name} ${num}</span>
+            `;
             return card;
         }
 
@@ -1121,30 +1125,50 @@
             DOMElements.battingOrderListFemale.innerHTML = '';
 
             const shouldHighlight = isUserTeamAtBat();
-            let traditionalLength = gameState.battingOrder.traditional.length || 1;
-            let maleLength = gameState.battingOrder.male.length || 1;
-            let femaleLength = gameState.battingOrder.female.length || 1;
+            
+            // Function to apply new visual indicator classes
+            const applyIndicatorClasses = (card, index, currentIndex, listLength) => {
+                const relativeIndex = (index - currentIndex + listLength) % listLength;
+                
+                if (!shouldHighlight) return;
 
+                // Reset classes
+                card.classList.remove('batting-current', 'batting-on-deck', 'batting-in-hole');
+                card.style.borderLeft = '';
+                card.style.backgroundColor = '';
+
+                if (relativeIndex === 0) {
+                    card.classList.add('batting-current');
+                } else if (relativeIndex === 1) {
+                    card.classList.add('batting-on-deck');
+                } else if (relativeIndex === 2) {
+                    card.classList.add('batting-in-hole');
+                }
+            };
+
+            // Traditional List
+            let traditionalLength = gameState.battingOrder.traditional.length;
             gameState.battingOrder.traditional.forEach((player, index) => {
                 const card = createBattingOrderCard(player);
-                if (shouldHighlight && gameState.gameMode === 'traditional' && index === gameState.currentBatterIndex.traditional % traditionalLength ) {
-                    card.classList.add('bg-yellow-200', 'ring-2', 'ring-yellow-500');
-                }
+                applyIndicatorClasses(card, index, gameState.currentBatterIndex.traditional, traditionalLength);
                 DOMElements.battingOrderList.appendChild(card);
             });
 
+            // Wheel Lists
+            let maleLength = gameState.battingOrder.male.length;
             gameState.battingOrder.male.forEach((player, index) => {
                 const card = createBattingOrderCard(player);
-                if (shouldHighlight && gameState.gameMode === 'wheel' && gameState.nextToBat === 'male' && index === gameState.currentBatterIndex.male % maleLength ) {
-                    card.classList.add('bg-yellow-200', 'ring-2', 'ring-yellow-500');
+                if (gameState.gameMode === 'wheel' && gameState.nextToBat === 'male') {
+                    applyIndicatorClasses(card, index, gameState.currentBatterIndex.male, maleLength);
                 }
                 DOMElements.battingOrderListMale.appendChild(card);
             });
 
+            let femaleLength = gameState.battingOrder.female.length;
             gameState.battingOrder.female.forEach((player, index) => {
                 const card = createBattingOrderCard(player);
-                if (shouldHighlight && gameState.gameMode === 'wheel' && gameState.nextToBat === 'female' && index === gameState.currentBatterIndex.female % femaleLength ) {
-                    card.classList.add('bg-yellow-200', 'ring-2', 'ring-yellow-500');
+                if (gameState.gameMode === 'wheel' && gameState.nextToBat === 'female') {
+                    applyIndicatorClasses(card, index, gameState.currentBatterIndex.female, femaleLength);
                 }
                 DOMElements.battingOrderListFemale.appendChild(card);
             });
@@ -1175,33 +1199,8 @@
         }
 
         function highlightCurrentBatter() {
-            // Remove existing highlights
-            document.querySelectorAll('.roster-card.bg-yellow-200').forEach(card => {
-                card.classList.remove('bg-yellow-200', 'ring-2', 'ring-yellow-500');
-            });
-
-            // --- Only highlight if it's the user's team at bat ---
-            if (!isUserTeamAtBat()) {
-                return;
-            }
-
-            let list, index;
-            if (gameState.gameMode === 'traditional') {
-                list = DOMElements.battingOrderList.children;
-                index = gameState.currentBatterIndex.traditional % (list.length || 1);
-            } else if (gameState.gameMode === 'wheel') {
-                if (gameState.nextToBat === 'male') {
-                    list = DOMElements.battingOrderListMale.children;
-                    index = gameState.currentBatterIndex.male % (list.length || 1);
-                } else {
-                    list = DOMElements.battingOrderListFemale.children;
-                    index = gameState.currentBatterIndex.female % (list.length || 1);
-                }
-            }
-
-            if (list && list.length > 0) {
-                list[index].classList.add('bg-yellow-200', 'ring-2', 'ring-yellow-500');
-            }
+            // Re-render batting order to update highlights
+            renderBattingOrder();
         }
 
         // --- Event Handlers ---
@@ -1231,15 +1230,15 @@
             if (mode === 'traditional') {
                 DOMElements.traditionalContainer.classList.remove('hidden');
                 DOMElements.traditionalContainer.classList.add('flex');
-                DOMElements.wheelContainer.classList.add('hidden');
-                DOMElements.wheelContainer.classList.remove('md:grid'); // Explicitly remove
+                DOMElements.wheelOrderContainer.classList.add('hidden'); // Corrected variable name
+                DOMElements.wheelOrderContainer.classList.remove('md:grid'); // Corrected variable name
                 // Next, ask for user's team
                 DOMElements.userTeamModal.classList.remove('hidden');
             } else {
                 DOMElements.traditionalContainer.classList.add('hidden');
                 DOMElements.traditionalContainer.classList.remove('flex');
-                DOMElements.wheelContainer.classList.remove('hidden');
-                DOMElements.wheelContainer.classList.add('md:grid');
+                DOMElements.wheelOrderContainer.classList.remove('hidden'); // Corrected variable name
+                DOMElements.wheelOrderContainer.classList.add('md:grid'); // Corrected variable name
                 
                 // Show "Who Bats First?" modal
                 DOMElements.whoBatsFirstModal.classList.remove('hidden');
@@ -1282,7 +1281,8 @@
             const newPlayer = { name, number, position, gender };
 
             try {
-                await addDoc(rosterCollectionRef, newPlayer);
+                // Roster is now stored at: artifacts/{appId}/users/{userId}/roster
+                await addDoc(collection(db, `artifacts/${appId}/users/${userId}/roster`), newPlayer);
                 addLogEntry(`Player added to roster: ${name}.`);
                 // Clear inputs *except* gender
                 DOMElements.playerNameInput.value = '';
@@ -1333,7 +1333,8 @@
             
             // Remove from Firestore
             try {
-                const playerDocRef = doc(db, rosterCollectionRef.path, id);
+                // Doc path is now corrected to use appId
+                const playerDocRef = doc(db, `artifacts/${appId}/users/${userId}/roster`, id);
                 await deleteDoc(playerDocRef);
                 if (player) addLogEntry(`Removed ${player.name} from roster.`);
             } catch (error) {
@@ -1343,7 +1344,7 @@
             }
         }
         
-        function handleNextBatter() {
+        function handleNextBatter(skipReset = false) {
             // --- NEW: Only advance batting order if it's the user's team ---
             if (isUserTeamAtBat() && validateBattingOrder()) {
                 if (gameState.gameMode === 'traditional') {
@@ -1365,7 +1366,9 @@
                 }
             }
             
-            resetCounts(); // Resets to 1-1
+            if (!skipReset) {
+                 resetCounts(); // Resets to 1-1 (but not runsThisPlay)
+            }
             highlightCurrentBatter();
         }
 
@@ -1558,303 +1561,26 @@
         // --- Roster Toggle ---
         function handleRosterToggle() {
             gameState.rosterMinimized = !gameState.rosterMinimized;
-            if (gameState.rosterMinimized) {
-                DOMElements.rosterToggleContent.style.maxHeight = '0px';
-                DOMElements.rosterToggleContent.style.opacity = '0';
-                DOMElements.rosterToggleContent.style.marginTop = '0';
-                DOMElements.rosterToggleBtn.textContent = '+';
-            } else {
-                // Set to a large value to allow content to define height
-                DOMElements.rosterToggleContent.style.maxHeight = '1000px'; 
-                DOMElements.rosterToggleContent.style.opacity = '1';
-                DOMElements.rosterToggleContent.style.marginTop = ''; // Revert to default
-                DOMElements.rosterToggleBtn.textContent = '-';
-            }
+            DOMElements.rosterToggleContent.style.maxHeight = gameState.rosterMinimized ? '0px' : '1000px';
+            DOMElements.rosterToggleContent.style.opacity = gameState.rosterMinimized ? '0' : '1';
+            DOMElements.rosterToggleBtn.textContent = gameState.rosterMinimized ? '+' : '-';
         }
-        
-        // --- Firebase Auth & Init ---
-        
-        async function initializeAppAndAuth() {
-            try {
-                // Initialize Firebase
-                app = initializeApp(firebaseConfig);
-                // const analytics = getAnalytics(app); // We don't need analytics for this
-                
-                db = getFirestore(app);
-                auth = getAuth(app);
-                setLogLevel('Debug'); // Enable Firestore logging
+        DOMElements.rosterToggleBtn.onclick = handleRosterToggle;
 
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        console.log("User is authenticated:", user.uid);
-                        userId = user.uid;
-                        DOMElements.userIdDisplay.textContent = userId;
-                        // User is signed in, set up Firestore references and listener
-                        
-                        // --- IMPORTANT: This path is for your personal app ---
-                        rosterCollectionRef = collection(db, `users/${userId}/roster`);
-                        
-                        setupRosterListener();
-                    } else {
-                        console.log("User is not authenticated.");
-                        userId = null;
-                        DOMElements.userIdDisplay.textContent = 'not signed in';
-                        unsubscribeRoster(); // Stop listening if logged out
-                        gameState.roster = [];
-                        renderRoster();
-                    }
-                });
+        // --- FIX: Unified handleGameLogToggle usage ---
+        DOMElements.gameLogToggleBtn.onclick = handleGameLogToggle;
 
-                // Sign in Anonymously
-                console.log("Signing in anonymously...");
-                await signInAnonymously(auth);
-
-            } catch (error) {
-                console.error("Firebase Initialization Error:", error);
-                DOMElements.userIdDisplay.textContent = 'Error';
-            }
-        }
-        
-        function setupRosterListener() {
-            if (!rosterCollectionRef) return;
-
-            // Stop any previous listener
-            unsubscribeRoster();
-            
-            console.log("Setting up roster listener at:", rosterCollectionRef.path);
-            
-            unsubscribeRoster = onSnapshot(rosterCollectionRef, (snapshot) => {
-                console.log("Roster data received from Firestore.");
-                const newRoster = [];
-                snapshot.forEach((doc) => {
-                    newRoster.push({ id: doc.id, ...doc.data() });
-                });
-                gameState.roster = newRoster;
-                renderRoster();
-                // When roster reloads, re-render batting order to check for + buttons
-                renderBattingOrder();
-            }, (error) => {
-                console.error("Error with roster snapshot: ", error);
-            });
-        }
-        
-        // --- Helper to show/hide all modals
-        function hideAllModals() {
-            DOMElements.modalOverlay.classList.add('hidden');
-            DOMElements.gameModeModal.classList.add('hidden');
-            DOMElements.whoBatsFirstModal.classList.add('hidden');
-            DOMElements.userTeamModal.classList.add('hidden');
-            DOMElements.hitTypeModal.classList.add('hidden');
-            DOMElements.baseContextModal1.classList.add('hidden');
-            DOMElements.baseContextModal2.classList.add('hidden');
-            DOMElements.baseContextModal3.classList.add('hidden');
-            DOMElements.forceOutModal.classList.add('hidden');
-        }
-
-        function showModal(modalElement) {
-            hideAllModals(); // Hide all first
-            DOMElements.modalOverlay.classList.remove('hidden'); // Show overlay
-            modalElement.classList.remove('hidden'); // Show specific modal
-        }
-
-        // --- App Entry Point ---
-        
         function init() {
-            // Setup initial UI state
             updateScoreboard();
             updateBases();
-            showModal(DOMElements.gameModeModal); // Start with first modal
-            
-            // Setup Event Listeners
-            DOMElements.inningToggle.addEventListener('click', handleInningToggle);
-            DOMElements.rosterToggleBtn.addEventListener('click', handleRosterToggle);
-            DOMElements.gameLogToggleBtn.addEventListener('click', handleGameLogToggle);
-
-
-            DOMElements.btnWalk.addEventListener('click', () => {
-                const batter = getCurrentBatter();
-                advanceRunnersOnWalk(batter);
-                handleNextBatter();
-            });
-            DOMElements.btnHit.addEventListener('click', () => {
-                showModal(DOMElements.hitTypeModal);
-            });
-
-            DOMElements.btnOut.addEventListener('click', () => {
-                const batter = getCurrentBatter();
-                const batterName = getBatterName(batter);
-                const isThirdOut = addOut(`${batterName} is out.`); // addOut returns true if it was the 3rd out
-                if (!isThirdOut) { // Only advance to next batter if not 3rd out
-                    handleNextBatter();
-                }
-            });
-
-            DOMElements.btnEndGame.addEventListener('click', () => {
-                // Simple reset by reloading the page
-                window.location.reload();
-            });
-            
-            DOMElements.addPlayerForm.addEventListener('submit', handleRosterSubmit);
-            
-            // Base click listeners
-            setupBaseClickListeners();
-
-            // Drag and Drop
-            setupDragAndDrop();
-
-            // Modal listeners
-            DOMElements.modeTraditionalBtn.addEventListener('click', handleGameModeSelect);
-            DOMElements.modeWheelBtn.addEventListener('click', handleGameModeSelect);
-            DOMElements.startMaleBtn.addEventListener('click', handleWhoBatsFirst);
-            DOMElements.startFemaleBtn.addEventListener('click', handleWhoBatsFirst);
-            DOMElements.teamHomeBtn.addEventListener('click', handleUserTeamSelect);
-            DOMElements.teamAwayBtn.addEventListener('click', handleUserTeamSelect);
-            
-            // Hit Type Modal Listeners
-            DOMElements.hitTypeButtons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const hitType = parseInt(e.currentTarget.dataset.hitType, 10);
-                    const batter = getCurrentBatter();
-                    advanceRunnersOnHit(batter, hitType); 
-                });
-            });
-            DOMElements.cancelHitButton.addEventListener('click', () => {
-                hideAllModals();
-            });
-            
-            // --- Base Context Modal Listeners (NEW) ---
-            DOMElements.baseActionButtons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const action = e.currentTarget.dataset.action;
-                    const targetBaseNum = parseInt(e.currentTarget.dataset.base, 10);
-                    const currentBaseNum = parseInt(e.currentTarget.closest('.bg-white').dataset.baseNum, 10);
-                    
-                    if (action === 'cancel') {
-                        hideAllModals();
-                        return;
-                    }
-
-                    const runner = gameState.bases[currentBaseNum];
-                    if (!runner) {
-                        hideAllModals();
-                        return;
-                    }
-                    
-                    // All actions remove the runner from the current base
-                    gameState.bases[currentBaseNum] = null;
-
-                    if (action === 'move') {
-                        // Check if target base is occupied, if so, push
-                        if (gameState.bases[targetBaseNum]) {
-                            const nextBase = targetBaseNum + 1;
-                            if (nextBase >= 4) {
-                                addRuns(1, gameState.bases[targetBaseNum].name, true);
-                            } else {
-                                gameState.bases[nextBase] = gameState.bases[targetBaseNum];
-                            }
-                        }
-                        // Move runner to target base
-                        gameState.bases[targetBaseNum] = runner;
-                        addLogEntry(`${runner.name} advances to ${targetBaseNum === 2 ? '2nd' : '3rd'}.`, 'info');
-                    } 
-                    else if (action === 'score') {
-                        addRuns(1, runner.name, true); // Manually scored run
-                        // Do not renumber on score
-                    }
-                    else if (action === 'out') {
-                        const isThirdOut = addOut(`${runner.name} is out on base.`); // Manually counted out
-                        renumberRunnersOnBase(runner.displayOrder); // Renumber remaining
-                        if (!isThirdOut) { 
-                            resetCounts(); // An out was made, reset counts
-                        }
-                    }
-                    
-                    updateBases(); // Update UI
-                    hideAllModals();
-                });
-            });
-            
-            // Force Out Modal Listeners
-            DOMElements.forceOutYesBtn.addEventListener('click', () => handleForceOut(true));
-            DOMElements.forceOutNoBtn.addEventListener('click', () => handleForceOut(false));
-
-
-            // --- NEW Ball/Strike Button Listeners ---
-            DOMElements.btnAddBall.addEventListener('click', () => {
-                if (gameState.balls < 3) {
-                    gameState.balls++;
-                    updateScoreboard();
-                } else {
-                    // 4th ball, trigger a walk
-                    gameState.balls = 4;
-                    updateScoreboard(); // Show 4 balls briefly
-                    setTimeout(() => {
-                        const batter = getCurrentBatter();
-                        advanceRunnersOnWalk(batter);
-                        handleNextBatter();
-                    }, 500); // Short delay to see 4 balls
-                }
-            });
-
-            DOMElements.btnAddStrike.addEventListener('click', () => {
-                if (gameState.strikes < 2) {
-                    gameState.strikes++;
-                    updateScoreboard();
-                } else {
-                    // 3rd strike, trigger an out
-                    gameState.strikes = 3;
-                    updateScoreboard();
-                    setTimeout(() => {
-                        const batter = getCurrentBatter();
-                        const batterName = getBatterName(batter);
-                        const isThirdOut = addOut(`${batterName} strikes out.`);
-                        if (!isThirdOut) { // Only advance if not 3rd out
-                            handleNextBatter();
-                        }
-                    }, 500); // Short delay to see 3 strikes
-                }
-            });
-            
-            // We'll leave the 'out' listener for manual setting
-            DOMElements.outs.forEach((out, i) => {
-                out.addEventListener('click', () => {
-                    // Clicking the "nth" out sets the count to "n"
-                    // This logic assumes you are *setting* the out count
-                    const newCount = (gameState.outs === i + 1) ? i : i + 1;
-                    gameState.outs = newCount;
-                    addLogEntry(`Out count manually set to ${newCount}.`, 'info');
-
-                    if (gameState.outs === 3) {
-                        // Check for force out
-                        if (gameState.runsThisPlay > 0) {
-                            setTimeout(() => {
-                                showModal(DOMElements.forceOutModal);
-                            }, 500);
-                        } else {
-                           setTimeout(() => {
-                               advanceHalfInning(); // Let advanceHalfInning handle resets 
-                            }, 500); 
-                        }
-                    } else {
-                        updateScoreboard();
-                    }
-                });
-            });
-
-
-            // Start Firebase
-            initializeAppAndAuth();
-
-            // Set initial state of roster (hidden)
+            showModal(DOMElements.gameModeModal);
+            initAuth();
+            setupBaseActions();
             handleRosterToggle();
-            
-            // Set initial 1-1 count
-            resetCounts();
+            handleGameLogToggle();
         }
 
-        // --- Run App ---
         document.addEventListener('DOMContentLoaded', init);
-
     </script>
 </body>
 </html>
