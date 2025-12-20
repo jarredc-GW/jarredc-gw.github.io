@@ -232,7 +232,7 @@
                 </button>
             </div>
         </div>
-
+        
         <!-- "End Game" Confirmation Modal -->
         <div id="end-game-modal" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full hidden">
             <h2 class="text-xl font-bold text-center mb-6">End Game?</h2>
@@ -444,7 +444,11 @@
             appId: "1:749570093852:web:d1f4ad5e1261637dfd40d9",
             measurementId: "G-27TEBB943P"
         };
+
+        // Use your project ID as the app ID
         const appId = firebaseConfig.projectId;
+        // ------------------------------------------
+
         
         // --- Firebase Imports ---
         import { 
@@ -578,7 +582,6 @@
             gameLogToggleContent: document.getElementById('game-log-toggle-content'),
             gameLogList: document.getElementById('game-log-list'),
             baseActionButtons: document.querySelectorAll('.base-action-btn'),
-            // --- NEW: Select the cancel button by class within the modal for robustness
             hitTypeButtons: document.querySelectorAll('.hit-type-btn'),
             cancelHitButton: document.getElementById('cancel-hit'),
         };
@@ -1075,49 +1078,69 @@
 
             const shouldHighlight = isUserTeamAtBat();
             
-            // Function to apply new visual indicator classes
-            const applyIndicatorClasses = (card, index, currentIndex, listLength) => {
-                const relativeIndex = (index - currentIndex + listLength) % listLength;
-                
-                if (!shouldHighlight) return;
-
-                // Reset classes
-                card.classList.remove('batting-current', 'batting-on-deck', 'batting-in-hole');
-                card.style.borderLeft = '';
-                card.style.backgroundColor = '';
-
-                if (relativeIndex === 0) {
-                    card.classList.add('batting-current');
-                } else if (relativeIndex === 1) {
-                    card.classList.add('batting-on-deck');
-                } else if (relativeIndex === 2) {
-                    card.classList.add('batting-in-hole');
-                }
+            // Helper to create indicators
+            const createDot = (type) => {
+                const dot = document.createElement('span');
+                dot.className = "w-3 h-3 rounded-full mr-3 flex-shrink-0";
+                if (type === 'current') dot.classList.add('bg-green-500');
+                else if (type === 'next-opposite') dot.classList.add('bg-orange-500');
+                else if (type === 'next-same') dot.classList.add('border-2', 'border-orange-500');
+                return dot;
             };
 
-            // Traditional List
+            // Traditional List Logic
             let traditionalLength = gameState.battingOrder.traditional.length;
             gameState.battingOrder.traditional.forEach((player, index) => {
                 const card = createBattingOrderCard(player);
-                applyIndicatorClasses(card, index, gameState.currentBatterIndex.traditional, traditionalLength);
+                if (shouldHighlight && traditionalLength > 0) {
+                    const rel = (index - (gameState.currentBatterIndex.traditional % traditionalLength) + traditionalLength) % traditionalLength;
+                    if (rel === 0) card.prepend(createDot('current'));
+                    else if (rel === 1) card.prepend(createDot('next-opposite'));
+                    else if (rel === 2) card.prepend(createDot('next-same'));
+                }
                 DOMElements.battingOrderList.appendChild(card);
             });
 
-            // Wheel Lists
-            let maleLength = gameState.battingOrder.male.length;
-            gameState.battingOrder.male.forEach((player, index) => {
+            // Wheel Lists Logic
+            const nextBat = gameState.nextToBat; // 'male' or 'female'
+            const mList = gameState.battingOrder.male;
+            const mLen = mList.length;
+            const mIdx = gameState.currentBatterIndex.male;
+
+            const fList = gameState.battingOrder.female;
+            const fLen = fList.length;
+            const fIdx = gameState.currentBatterIndex.female;
+
+            // Render Male List
+            mList.forEach((player, index) => {
                 const card = createBattingOrderCard(player);
-                if (gameState.gameMode === 'wheel' && gameState.nextToBat === 'male') {
-                    applyIndicatorClasses(card, index, gameState.currentBatterIndex.male, maleLength);
+                if (shouldHighlight && gameState.gameMode === 'wheel') {
+                    if (nextBat === 'male') {
+                        // Male is batting now (Green)
+                        if (index === mIdx % (mLen || 1)) card.prepend(createDot('current'));
+                        // Next male is "In Hole" (Orange Ring)
+                        else if (index === (mIdx + 1) % (mLen || 1)) card.prepend(createDot('next-same'));
+                    } else {
+                        // Female is batting, Male is On Deck (Orange Dot)
+                        if (index === mIdx % (mLen || 1)) card.prepend(createDot('next-opposite'));
+                    }
                 }
                 DOMElements.battingOrderListMale.appendChild(card);
             });
 
-            let femaleLength = gameState.battingOrder.female.length;
-            gameState.battingOrder.female.forEach((player, index) => {
+            // Render Female List
+            fList.forEach((player, index) => {
                 const card = createBattingOrderCard(player);
-                if (gameState.gameMode === 'wheel' && gameState.nextToBat === 'female') {
-                    applyIndicatorClasses(card, index, gameState.currentBatterIndex.female, femaleLength);
+                if (shouldHighlight && gameState.gameMode === 'wheel') {
+                    if (nextBat === 'female') {
+                        // Female is batting now (Green)
+                        if (index === fIdx % (fLen || 1)) card.prepend(createDot('current'));
+                        // Next female is "In Hole" (Orange Ring)
+                        else if (index === (fIdx + 1) % (fLen || 1)) card.prepend(createDot('next-same'));
+                    } else {
+                        // Male is batting, Female is On Deck (Orange Dot)
+                        if (index === fIdx % (fLen || 1)) card.prepend(createDot('next-opposite'));
+                    }
                 }
                 DOMElements.battingOrderListFemale.appendChild(card);
             });
@@ -1593,13 +1616,9 @@ function setupBaseActions() {
                         unsubscribeRoster(); // Stop listening if logged out
                         gameState.roster = [];
                         renderRoster();
+                        signInAnonymously(auth); // Sign in if not authenticated
                     }
                 });
-
-                // Sign in Anonymously
-                console.log("Signing in anonymously...");
-                await signInAnonymously(auth);
-
             } catch (error) {
                 console.error("Firebase Initialization Error:", error);
                 DOMElements.userIdDisplay.textContent = 'Error';
@@ -1653,25 +1672,36 @@ function setupBaseActions() {
         DOMElements.addPlayerForm.addEventListener('submit', handleRosterSubmit);
         
         DOMElements.btnWalk.addEventListener('click', () => {
+            // Reset "Runs This Play" only for new actions
+            gameState.runsThisPlay = 0;
+            
             const batter = getCurrentBatter();
             advanceRunnersOnWalk(batter);
             handleNextBatter();
         });
 
         DOMElements.btnHit.addEventListener('click', () => {
+            // Reset "Runs This Play" only for new actions
+            gameState.runsThisPlay = 0;
             showModal(DOMElements.hitTypeModal);
         });
 
         DOMElements.btnOut.addEventListener('click', () => {
+            // Reset "Runs This Play" only for new actions
+            gameState.runsThisPlay = 0;
+            
             const batter = getCurrentBatter();
             const batterName = getBatterName(batter);
-            const isThirdOut = addOut(`${batterName} is out.`); 
+            const isThirdOut = addOut(`${batterName} is out.`, false); 
             if (!isThirdOut) {
                 handleNextBatter();
             }
         });
 
         DOMElements.btnAddBall.addEventListener('click', () => {
+            // Reset "Runs This Play" only for new actions
+            gameState.runsThisPlay = 0;
+            
             if (gameState.balls < 3) {
                 gameState.balls++;
                 updateScoreboard();
@@ -1683,13 +1713,16 @@ function setupBaseActions() {
         });
 
         DOMElements.btnAddStrike.addEventListener('click', () => {
+             // Reset "Runs This Play" only for new actions
+             gameState.runsThisPlay = 0;
+             
              if (gameState.strikes < 2) {
                 gameState.strikes++;
                 updateScoreboard();
             } else {
                 const batter = getCurrentBatter();
                 const batterName = getBatterName(batter);
-                const isThirdOut = addOut(`${batterName} strikes out.`);
+                const isThirdOut = addOut(`${batterName} strikes out.`, false);
                  if (!isThirdOut) {
                     handleNextBatter();
                 }
@@ -1764,10 +1797,11 @@ function setupBaseActions() {
             setupBaseActions();
             handleRosterToggle();
             handleGameLogToggle();
+            setupDragAndDrop(); // Added setupDragAndDrop to init
         }
 
         document.addEventListener('DOMContentLoaded', init);
-        console.log("Version 4 loaded.");
+        console.log("Version 2 loaded.");
     </script>
 </body>
 </html>
