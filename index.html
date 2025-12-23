@@ -29,12 +29,26 @@
         .invalid-order {
             border: 2px dashed #ef4444 !important;
         }
+        
+        /* --- DIAMOND SIZING --- */
         .baseball-diamond {
+            /* Mobile / Default Size */
             width: 85%;
+            height: 85%; 
             margin: 0 auto;
             aspect-ratio: 1 / 1;
             position: relative;
         }
+
+        /* Desktop / Tablet Size (Screens smaller than 768px) */
+        @media (max-width: 1000px) {
+            .baseball-diamond {
+                width: 85%; /* Change this value to resize ONLY desktop */
+                max-width: 500px; /* Prevents it from getting massive on huge screens */
+            }
+        }
+        /* ---------------------- */
+
         .baseball-diamond svg {
             width: 100%;
             height: 100%;
@@ -1202,7 +1216,6 @@
             const num = player.number ? `(${player.number})` : '';
             const pos = player.position ? `${player.position} - ` : '';
             
-            // Layout: LC - Jarred (15) - Gender removed
             card.innerHTML = `
                 <span class="font-medium text-sm text-gray-800">${pos}${player.name} ${num}</span>
             `;
@@ -1483,6 +1496,7 @@
         }
 
         // --- Drag and Drop Handlers ---
+      
 
         function setupDragAndDrop() {
             const lists = [
