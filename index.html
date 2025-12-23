@@ -422,7 +422,7 @@
             </div>
             
             <div class="w-full md:h-2/3 flex-grow min-h-0 flex items-center justify-center bg-white rounded-lg shadow-xl p-4 overflow-hidden relative">
-                <div class="w-full h-full relative">
+                <div class="w-full aspect-square md:aspect-auto md:h-full relative">
                     <div class="baseball-diamond absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <path d="M 50 10 L 90 50 L 50 90 L 10 50 Z" fill="#689f38" stroke="#a5d6a7" stroke-width="1"/>
@@ -1551,6 +1551,7 @@
         }
 
         // --- Drag and Drop Handlers ---
+   
 
         function setupDragAndDrop() {
             const lists = [
@@ -1745,29 +1746,7 @@ function setupBaseActions() {
                 });
             });
         }
-        // --- Base click handlers ---
-        function setupBaseClickListeners() {
-            Object.keys(DOMElements.bases).forEach(baseNumStr => {
-                const baseNum = parseInt(baseNumStr, 10);
-                DOMElements.bases[baseNum].addEventListener('click', () => {
-                    const runner = gameState.bases[baseNum];
-                    if (runner) {
-                        // Runner is present, show context menu
-                        DOMElements.baseContextModal1.dataset.baseNum = baseNum;
-                        DOMElements.baseContextModal2.dataset.baseNum = baseNum;
-                        DOMElements.baseContextModal3.dataset.baseNum = baseNum;
-                        
-                        // Show the correct modal for the base
-                        if(baseNum === 1) showModal(DOMElements.baseContextModal1);
-                        else if(baseNum === 2) showModal(DOMElements.baseContextModal2);
-                        else if(baseNum === 3) showModal(DOMElements.baseContextModal3);
-                    }
-                    // If base is empty, do nothing
-                });
-            });
-        }
         
-        // --- RUNNER NUMBERING FIX ---
         function renumberRunnersOnBase(outRunnerDisplayOrder) {
             // Get all runners on base
             const runnersOnBase = [];
@@ -1791,9 +1770,7 @@ function setupBaseActions() {
             
             updateBases(); // Update UI with new numbers
         }
-        // --- END RUNNER NUMBERING FIX ---
 
-        // --- RESTORED initAuth FUNCTION ---
         async function initAuth() {
             try {
                 // Initialize Firebase
