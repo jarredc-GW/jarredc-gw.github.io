@@ -30,20 +30,14 @@
             border: 2px dashed #ef4444 !important;
         }
         .baseball-diamond {
-            width: 85%; /* Preferred width */
-            max-width: 100%;
-            /* Fix: Limit height to prevent vertical cutoff on mobile */
-            max-height: 100%; 
-            /* Fix: Force square aspect ratio to keep bases aligned with SVG */
-            aspect-ratio: 1 / 1; 
+            width: 85%;
             margin: 0 auto;
+            aspect-ratio: 1 / 1;
             position: relative;
         }
         .baseball-diamond svg {
             width: 100%;
             height: 100%;
-            /* Ensure SVG scales within the square container */
-            display: block; 
         }
         .base {
             position: absolute;
@@ -51,10 +45,6 @@
             height: 12.75%;
             cursor: pointer;
             transition: transform 0.2s;
-            /* Center content for icons */
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
         .base:active {
             transform: scale(0.9);
@@ -64,11 +54,10 @@
             font-size: clamp(0.6rem, 2vw, 0.75rem);
             font-weight: 500;
             color: #4b5563;
-            bottom: -25px; /* Moved down slightly to clear base */
+            bottom: -20px;
             left: 50%;
             transform: translateX(-50%);
             white-space: nowrap;
-            pointer-events: none; /* Let clicks pass through label to base */
         }
         .base.active .base-icon {
             fill: #3b82f6;
@@ -90,41 +79,20 @@
             max-width: 120%;
             display: none;
             z-index: 10;
-            pointer-events: none;
         }
         .base.active .base-runner-name {
             display: block;
         }
 
-        /* --- PRECISE BASE ALIGNMENT --- 
-           Base Size: 12.75% -> Half Size: 6.375%
-           SVG Points: Top(50,10), Right(90,50), Bottom(50,90), Left(10,50)
-           Formula: CSS Position = SVG Point - Half Size
-        */
-        
-        /* 2nd Base (Top) at 50%, 10% */
-        #second-base { 
-            left: 43.625%; /* 50 - 6.375 */
-            top: 3.625%;   /* 10 - 6.375 */
-        } 
-
-        /* 1st Base (Right) at 90%, 50% */
-        #first-base { 
-            left: 83.625%; /* 90 - 6.375 */
-            top: 43.625%;  /* 50 - 6.375 */
-        }
-        
-        /* Home Plate (Bottom) at 50%, 90% */
-        #home-plate { 
-            left: 43.625%; /* 50 - 6.375 */
-            top: 83.625%;  /* 90 - 6.375 */
-        }
-        
-        /* 3rd Base (Left) at 10%, 50% */
-        #third-base { 
-            left: 3.625%;  /* 10 - 6.375 */
-            top: 43.625%;  /* 50 - 6.375 */
-        }
+        /* --- FINAL BASE POSITIONS --- */
+        #home-plate { bottom: 5%; left: 42.5%; }
+        #home-plate .base-label { bottom: -25px; }
+        #first-base { bottom: 42.5%; right: 6.75%; }
+        #first-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
+        #second-base { top: 7.5%; left: 42.5%; } 
+        #second-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
+        #third-base { bottom: 42.5%; left: 6.75%; }
+        #third-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
 
         .prevent-select {
             -webkit-user-select: none;
@@ -339,7 +307,6 @@
             </div>
             
             <div class="flex-grow flex flex-col min-h-0">
-                <!-- Batting Order Header with Edit Button -->
                 <div class="flex justify-between items-center mb-2">
                     <h3 class="text-lg font-semibold text-gray-700">Today's Batting Order</h3>
                     <button id="edit-order-btn" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Edit</button>
@@ -456,19 +423,16 @@
             
             <div class="w-full md:h-2/3 flex-grow min-h-0 flex items-center justify-center bg-white rounded-lg shadow-xl p-4 overflow-hidden relative">
                 <div class="w-full h-full relative">
-                    <!-- Added aspect-square md:aspect-auto to wrapper -->
-                    <div class="w-full aspect-square md:aspect-auto md:h-full relative">
-                        <div class="baseball-diamond absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M 50 10 L 90 50 L 50 90 L 10 50 Z" fill="#689f38" stroke="#a5d6a7" stroke-width="1"/>
-                                <path d="M 50 90 L 90 50 L 50 10 L 10 50 Z" fill="none" stroke="#d2b48c" stroke-width="2"/>
-                                <circle cx="50" cy="50" r="8" fill="#d2b48c" opacity="0.6"/>
-                            </svg>
-                            <div id="home-plate" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 10 10 L 90 10 L 90 50 L 50 90 L 10 50 Z"/></svg><span class="base-label">Home</span><span class="base-runner-name"></span></div>
-                            <div id="first-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">First</span><span class="base-runner-name"></span></div>
-                            <div id="second-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">Second</span><span class="base-runner-name"></span></div>
-                            <div id="third-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">Third</span><span class="base-runner-name"></span></div>
-                        </div>
+                    <div class="baseball-diamond absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 50 10 L 90 50 L 50 90 L 10 50 Z" fill="#689f38" stroke="#a5d6a7" stroke-width="1"/>
+                            <path d="M 50 90 L 90 50 L 50 10 L 10 50 Z" fill="none" stroke="#d2b48c" stroke-width="2"/>
+                            <circle cx="50" cy="50" r="8" fill="#d2b48c" opacity="0.6"/>
+                        </svg>
+                        <div id="home-plate" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 10 10 L 90 10 L 90 50 L 50 90 L 10 50 Z"/></svg><span class="base-label">Home</span><span class="base-runner-name"></span></div>
+                        <div id="first-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">First</span><span class="base-runner-name"></span></div>
+                        <div id="second-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">Second</span><span class="base-runner-name"></span></div>
+                        <div id="third-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">Third</span><span class="base-runner-name"></span></div>
                     </div>
                 </div>
             </div>
@@ -737,6 +701,19 @@
             DOMElements.homeLabel.classList.toggle('ring-yellow-400', gameState.userTeam === 'home');
             DOMElements.awayLabel.classList.toggle('ring-2', gameState.userTeam === 'away');
             DOMElements.awayLabel.classList.toggle('ring-yellow-400', gameState.userTeam === 'away');
+
+            // Set score colors based on user team
+            if (gameState.userTeam === 'home') {
+                DOMElements.homeScore.className = "text-4xl font-bold text-green-700";
+                DOMElements.awayScore.className = "text-4xl font-bold text-red-700";
+            } else if (gameState.userTeam === 'away') {
+                DOMElements.homeScore.className = "text-4xl font-bold text-red-700";
+                DOMElements.awayScore.className = "text-4xl font-bold text-green-700";
+            } else {
+                // Default if not selected yet (though logic suggests it's selected early)
+                DOMElements.homeScore.className = "text-4xl font-bold text-blue-700"; // or whatever default
+                DOMElements.awayScore.className = "text-4xl font-bold text-gray-700";
+            }
 
 
             updateCounter(DOMElements.balls, gameState.balls, 'bg-yellow-400');
@@ -1033,75 +1010,139 @@
             hideAllModals();
             
             const newRunner = createNewRunner(batter);
-            let scoredRunners = []; // Changed to let, though const is fine for push. 
-            
-            // Capture initial state
-            const r1 = gameState.bases[1];
-            const r2 = gameState.bases[2];
-            const r3 = gameState.bases[3];
-            
-            // Clear bases to rebuild state
-            gameState.bases = { 1: null, 2: null, 3: null }; 
+            const scoredRunners = [];
 
-            if (hitType === 4) { // Home Run
-                if (r3) scoredRunners.push(r3.name);
-                if (r2) scoredRunners.push(r2.name);
-                if (r1) scoredRunners.push(r1.name);
-                scoredRunners.push(newRunner.name);
-            } 
-            else if (hitType === 3) { // Triple
-                if (r3) scoredRunners.push(r3.name);
-                if (r2) scoredRunners.push(r2.name);
-                if (r1) scoredRunners.push(r1.name);
-                gameState.bases[3] = newRunner;
-            } 
-            else if (hitType === 2) { // Double
-                if (r3) scoredRunners.push(r3.name);
-                if (r2) scoredRunners.push(r2.name);
-                // R1 advances to 3rd
-                if (r1) gameState.bases[3] = r1;
-                gameState.bases[2] = newRunner;
-            } 
-            else if (hitType === 1) { // Single (Force Chain Logic)
-                
-                // 1. Batter takes 1st
-                gameState.bases[1] = newRunner;
-                
-                // 2. Handle R1
-                if (r1) {
-                    // R1 is forced to 2nd
-                    gameState.bases[2] = r1;
-                    
-                    // 3. Handle R2 (Only forced if R1 moved to 2nd)
-                    if (r2) {
-                        // R2 is forced to 3rd
-                        gameState.bases[3] = r2;
-                        
-                        // 4. Handle R3 (Only forced if R2 moved to 3rd)
-                        if (r3) {
-                            // R3 is forced Home
-                            scoredRunners.push(r3.name);
-                        }
-                    } else {
-                        // R2 wasn't there, so 2nd was open for R1.
-                        // If R3 exists, they stay at 3rd (no force from 2nd)
-                        if (r3) gameState.bases[3] = r3;
+            // --- RE-FIXED PUSH LOGIC ---
+            let runsFromPush = 0;
+            const scoredFromPush = [];
+            const finalBases = { 1: null, 2: null, 3: null };
+
+            // 1. Handle Home Run: Clear all bases and score everyone
+            if (hitType === 4) {
+                for (let baseNum = 3; baseNum >= 1; baseNum--) {
+                    if (gameState.bases[baseNum]) {
+                        runsFromPush++;
+                        scoredFromPush.push(gameState.bases[baseNum].name);
                     }
-                } else {
-                    // R1 wasn't there. 1st was open for Batter.
-                    // Existing runners stay put unless user manually moves them.
-                    if (r2) gameState.bases[2] = r2;
-                    if (r3) gameState.bases[3] = r3;
+                    gameState.bases[baseNum] = null; // Clear base
+                }
+                runsFromPush++;
+                scoredFromPush.push(newRunner.name); // Batter scores
+                gameState.bases = { 1: null, 2: null, 3: null }; // Ensure clear state
+                
+            } else {
+                 // Place batter first on their hit base
+                finalBases[hitType] = newRunner;
+
+                // Process existing runners from 3rd down to 1st
+                // Only advance a runner if their base or the one they are forced to is taken by the "push" coming from behind
+                
+                // Let's model this as a chain reaction from the batter.
+                // Batter lands on [hitType].
+                // IF [hitType] was occupied, THAT runner is pushed to [hitType + 1].
+                // IF [hitType + 1] was occupied, THAT runner is pushed to [hitType + 2].
+                // ...and so on.
+
+                let currentPusher = newRunner;
+                let currentPusherBase = hitType;
+
+                // We need to know who was where originally
+                const originalRunners = { ...gameState.bases };
+
+                // Recursive push function
+                function pushRunner(baseToOccupy, pushingRunner) {
+                     // Check if someone is currently at baseToOccupy
+                     const occupant = originalRunners[baseToOccupy];
+                     
+                     // Place the pusher
+                     finalBases[baseToOccupy] = pushingRunner;
+                     
+                     // If there was an occupant, they are forced to next base
+                     if (occupant) {
+                         const nextBase = baseToOccupy + 1;
+                         if (nextBase > 3) {
+                             runsFromPush++;
+                             scoredFromPush.push(occupant.name);
+                         } else {
+                             pushRunner(nextBase, occupant);
+                         }
+                     }
+                }
+                
+                // BUT wait, that logic is for a Walk (force).
+                // On a HIT, the rule is:
+                // 1. Batter is placed at [hitType].
+                // 2. IF a runner was at [hitType] OR was pushed into it, they move forward.
+                // 3. Runners AHEAD of the push who are NOT forced stay put (unless you manually move them).
+                
+                // Example: Runner on 2nd. Batter hits Single (to 1st).
+                // Batter -> 1st.
+                // Runner at 2nd is NOT forced by 1st. Stays at 2nd.
+                // Correct.
+                
+                // Example: Runner on 1st. Batter hits Single (to 1st).
+                // Batter -> 1st.
+                // Runner at 1st is forced to 2nd.
+                // Runner at 2nd (if any) is forced to 3rd.
+                
+                // Let's implement this logic:
+                // We start with the batter at `hitType`.
+                // We check `originalRunners[hitType]`. If exists, they must move to `hitType+1`.
+                // We check `originalRunners[hitType+1]`. If exists AND we are pushing into it, they move to `hitType+2`.
+                
+                // Copy non-forced runners to finalBases first
+                for(let b=1; b<=3; b++) {
+                    if (originalRunners[b] && b > hitType) {
+                         // Runners ahead of the hit who are not immediately displaced *might* stay put.
+                         // We will overwrite them if a push comes through.
+                         finalBases[b] = originalRunners[b];
+                    }
+                }
+                
+                // Start the push chain
+                let runnerBeingPushed = null;
+                let baseToPushTo = null;
+                
+                // 1. Batter takes base
+                // Check who is displaced
+                if (originalRunners[hitType]) {
+                    runnerBeingPushed = originalRunners[hitType];
+                    baseToPushTo = hitType + 1;
+                }
+                finalBases[hitType] = newRunner;
+                
+                // 2. Resolve push chain
+                while (runnerBeingPushed) {
+                    if (baseToPushTo > 3) {
+                        runsFromPush++;
+                        scoredFromPush.push(runnerBeingPushed.name);
+                        runnerBeingPushed = null; // Scored
+                    } else {
+                        // Check if someone is at the next base
+                        const nextOccupant = originalRunners[baseToPushTo];
+                        
+                        // Place pushed runner
+                        finalBases[baseToPushTo] = runnerBeingPushed;
+                        
+                        if (nextOccupant) {
+                            // Continue chain
+                            runnerBeingPushed = nextOccupant;
+                            baseToPushTo++;
+                        } else {
+                            // Chain ends
+                            runnerBeingPushed = null;
+                        }
+                    }
                 }
             }
+            // --- END RE-FIXED PUSH LOGIC ---
 
-            // Batch process runs to ensure state updates correctly
-            if (scoredRunners.length > 0) {
-                scoredRunners.forEach(name => {
-                    addRuns(1, name, true);
-                });
+            gameState.bases = finalBases;
+
+            if (runsFromPush > 0) {
+                // Log runs one by one
+                scoredFromPush.forEach(name => addRuns(1, name, true));
             }
-            
             updateBases();
             handleNextBatter();
         }
@@ -1704,7 +1745,29 @@ function setupBaseActions() {
                 });
             });
         }
+        // --- Base click handlers ---
+        function setupBaseClickListeners() {
+            Object.keys(DOMElements.bases).forEach(baseNumStr => {
+                const baseNum = parseInt(baseNumStr, 10);
+                DOMElements.bases[baseNum].addEventListener('click', () => {
+                    const runner = gameState.bases[baseNum];
+                    if (runner) {
+                        // Runner is present, show context menu
+                        DOMElements.baseContextModal1.dataset.baseNum = baseNum;
+                        DOMElements.baseContextModal2.dataset.baseNum = baseNum;
+                        DOMElements.baseContextModal3.dataset.baseNum = baseNum;
+                        
+                        // Show the correct modal for the base
+                        if(baseNum === 1) showModal(DOMElements.baseContextModal1);
+                        else if(baseNum === 2) showModal(DOMElements.baseContextModal2);
+                        else if(baseNum === 3) showModal(DOMElements.baseContextModal3);
+                    }
+                    // If base is empty, do nothing
+                });
+            });
+        }
         
+        // --- RUNNER NUMBERING FIX ---
         function renumberRunnersOnBase(outRunnerDisplayOrder) {
             // Get all runners on base
             const runnersOnBase = [];
@@ -1728,7 +1791,9 @@ function setupBaseActions() {
             
             updateBases(); // Update UI with new numbers
         }
+        // --- END RUNNER NUMBERING FIX ---
 
+        // --- RESTORED initAuth FUNCTION ---
         async function initAuth() {
             try {
                 // Initialize Firebase
