@@ -30,20 +30,14 @@
             border: 2px dashed #ef4444 !important;
         }
         .baseball-diamond {
-            width: 85%; /* Preferred width */
-            max-width: 100%;
-            /* Fix: Limit height to prevent vertical cutoff on mobile */
-            max-height: 100%; 
-            /* Fix: Force square aspect ratio to keep bases aligned with SVG */
-            aspect-ratio: 1 / 1; 
+            width: 85%;
             margin: 0 auto;
+            aspect-ratio: 1 / 1;
             position: relative;
         }
         .baseball-diamond svg {
             width: 100%;
             height: 100%;
-            /* Ensure SVG scales within the square container */
-            display: block; 
         }
         .base {
             position: absolute;
@@ -51,10 +45,6 @@
             height: 12.75%;
             cursor: pointer;
             transition: transform 0.2s;
-            /* Center content for icons */
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
         .base:active {
             transform: scale(0.9);
@@ -64,11 +54,10 @@
             font-size: clamp(0.6rem, 2vw, 0.75rem);
             font-weight: 500;
             color: #4b5563;
-            bottom: -25px; /* Moved down slightly to clear base */
+            bottom: -20px;
             left: 50%;
             transform: translateX(-50%);
             white-space: nowrap;
-            pointer-events: none; /* Let clicks pass through label to base */
         }
         .base.active .base-icon {
             fill: #3b82f6;
@@ -90,41 +79,20 @@
             max-width: 120%;
             display: none;
             z-index: 10;
-            pointer-events: none;
         }
         .base.active .base-runner-name {
             display: block;
         }
 
-        /* --- PRECISE BASE ALIGNMENT --- 
-           Base Size: 12.75% -> Half Size: 6.375%
-           SVG Points: Top(50,10), Right(90,50), Bottom(50,90), Left(10,50)
-           Formula: CSS Position = SVG Point - Half Size
-        */
-        
-        /* 2nd Base (Top) at 50%, 10% */
-        #second-base { 
-            left: 43.625%; /* 50 - 6.375 */
-            top: 3.625%;   /* 10 - 6.375 */
-        } 
-
-        /* 1st Base (Right) at 90%, 50% */
-        #first-base { 
-            left: 83.625%; /* 90 - 6.375 */
-            top: 43.625%;  /* 50 - 6.375 */
-        }
-        
-        /* Home Plate (Bottom) at 50%, 90% */
-        #home-plate { 
-            left: 43.625%; /* 50 - 6.375 */
-            top: 83.625%;  /* 90 - 6.375 */
-        }
-        
-        /* 3rd Base (Left) at 10%, 50% */
-        #third-base { 
-            left: 3.625%;  /* 10 - 6.375 */
-            top: 43.625%;  /* 50 - 6.375 */
-        }
+        /* --- FINAL BASE POSITIONS --- */
+        #home-plate { bottom: 5%; left: 42.5%; }
+        #home-plate .base-label { bottom: -25px; }
+        #first-base { bottom: 42.5%; right: 6.75%; }
+        #first-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
+        #second-base { top: 7.5%; left: 42.5%; } 
+        #second-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
+        #third-base { bottom: 42.5%; left: 6.75%; }
+        #third-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
 
         .prevent-select {
             -webkit-user-select: none;
@@ -339,7 +307,11 @@
             </div>
             
             <div class="flex-grow flex flex-col min-h-0">
-                <h3 class="text-lg font-semibold text-gray-700 mb-2">Today's Batting Order</h3>
+                <!-- Batting Order Header with Edit Button -->
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-semibold text-gray-700">Today's Batting Order</h3>
+                    <button id="edit-order-btn" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                </div>
                 
                 <div id="traditional-order-container" class="flex-grow flex flex-col min-h-0">
                     <div id="batting-order-list" class="bg-gray-100 p-3 rounded-lg shadow-inner flex-grow min-h-[150px] space-y-2 overflow-y-auto"></div>
@@ -451,9 +423,8 @@
             </div>
             
             <div class="w-full md:h-2/3 flex-grow min-h-0 flex items-center justify-center bg-white rounded-lg shadow-xl p-4 overflow-hidden relative">
-                <!-- Diamond Container with responsive aspect-ratio fixes -->
-                <div class="w-full h-full relative flex items-center justify-center">
-                    <div class="baseball-diamond">
+                <div class="w-full h-full relative">
+                    <div class="baseball-diamond absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <path d="M 50 10 L 90 50 L 50 90 L 10 50 Z" fill="#689f38" stroke="#a5d6a7" stroke-width="1"/>
                             <path d="M 50 90 L 90 50 L 50 10 L 10 50 Z" fill="none" stroke="#d2b48c" stroke-width="2"/>
@@ -545,7 +516,8 @@
             rosterMinimized: false,
             gameLogMinimized: true,
             gameLog: [],
-            gameLogHeight: 200 // Default height
+            gameLogHeight: 200, // Default height
+            isEditingOrder: false // New state for editing batting order
         };
         const RUN_LIMIT = 6;
         const RUN_LIMIT_INNING = 5;
@@ -623,7 +595,8 @@
             baseActionButtons: document.querySelectorAll('.base-action-btn'),
             hitTypeButtons: document.querySelectorAll('.hit-type-btn'),
             cancelHitButton: document.getElementById('cancel-hit'),
-            gameLogResizeHandle: document.getElementById('game-log-resize-handle') // For Resize
+            gameLogResizeHandle: document.getElementById('game-log-resize-handle'), // For Resize
+            editOrderBtn: document.getElementById('edit-order-btn') // New edit button
         };
         
         // --- Game Log Functions ---
@@ -1205,6 +1178,16 @@
                     else if (rel === 1) card.appendChild(createDot('next-opposite'));
                     else if (rel === 2) card.appendChild(createDot('next-same'));
                 }
+                
+                // Add Delete Button if editing
+                if (gameState.isEditingOrder) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.innerHTML = '&minus;'; // Minus symbol
+                    deleteBtn.className = "ml-2 text-red-500 font-bold text-lg px-2 hover:bg-red-100 rounded-full";
+                    deleteBtn.addEventListener('click', (e) => handleRemoveFromOrder(e, index, 'traditional'));
+                    card.appendChild(deleteBtn);
+                }
+
                 DOMElements.battingOrderList.appendChild(card);
             });
 
@@ -1232,6 +1215,15 @@
                         if (index === mIdx % (mLen || 1)) card.appendChild(createDot('next-opposite'));
                     }
                 }
+                
+                if (gameState.isEditingOrder) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.innerHTML = '&minus;'; 
+                    deleteBtn.className = "ml-2 text-red-500 font-bold text-lg px-2 hover:bg-red-100 rounded-full";
+                    deleteBtn.addEventListener('click', (e) => handleRemoveFromOrder(e, index, 'male'));
+                    card.appendChild(deleteBtn);
+                }
+                
                 DOMElements.battingOrderListMale.appendChild(card);
             });
 
@@ -1249,6 +1241,15 @@
                         if (index === fIdx % (fLen || 1)) card.appendChild(createDot('next-opposite'));
                     }
                 }
+                
+                if (gameState.isEditingOrder) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.innerHTML = '&minus;'; 
+                    deleteBtn.className = "ml-2 text-red-500 font-bold text-lg px-2 hover:bg-red-100 rounded-full";
+                    deleteBtn.addEventListener('click', (e) => handleRemoveFromOrder(e, index, 'female'));
+                    card.appendChild(deleteBtn);
+                }
+
                 DOMElements.battingOrderListFemale.appendChild(card);
             });
 
@@ -1281,6 +1282,28 @@
             // Re-render batting order to update highlights
             renderBattingOrder();
         }
+        
+        function handleEditOrderToggle() {
+            gameState.isEditingOrder = !gameState.isEditingOrder;
+            DOMElements.editOrderBtn.textContent = gameState.isEditingOrder ? 'Done' : 'Edit';
+            renderBattingOrder();
+        }
+        
+        function handleRemoveFromOrder(e, index, listType) {
+            e.stopPropagation(); // Prevent drag/click logic
+            
+            if (listType === 'traditional') {
+                gameState.battingOrder.traditional.splice(index, 1);
+            } else if (listType === 'male') {
+                gameState.battingOrder.male.splice(index, 1);
+            } else if (listType === 'female') {
+                gameState.battingOrder.female.splice(index, 1);
+            }
+            
+            renderBattingOrder();
+            renderRoster(); // Update roster + buttons
+        }
+
 
         // --- Event Handlers ---
         function handleInningToggle() {
@@ -1451,7 +1474,7 @@
             highlightCurrentBatter();
         }
 
-        // --- Drag and Drop Handlers --
+        // --- Drag and Drop Handlers ---
 
         function setupDragAndDrop() {
             const lists = [
@@ -1752,6 +1775,7 @@ function setupBaseActions() {
         DOMElements.startFemaleBtn.addEventListener('click', handleWhoBatsFirst);
         DOMElements.teamHomeBtn.addEventListener('click', handleUserTeamSelect);
         DOMElements.teamAwayBtn.addEventListener('click', handleUserTeamSelect);
+        DOMElements.editOrderBtn.addEventListener('click', handleEditOrderToggle);
 
         // --- MISSING EVENT LISTENERS RESTORED ---
         DOMElements.addPlayerForm.addEventListener('submit', handleRosterSubmit);
