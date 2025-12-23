@@ -31,9 +31,11 @@
         }
         .baseball-diamond {
             width: 85%; /* Preferred width */
-            max-width: 95%;
+            max-width: 100%;
             /* Fix: Limit height to prevent vertical cutoff on mobile */
-            max-height: 100%;  
+            max-height: 100%; 
+            /* Fix: Force square aspect ratio to keep bases aligned with SVG */
+            aspect-ratio: 1 / 1; 
             margin: 0 auto;
             position: relative;
         }
@@ -454,16 +456,19 @@
             
             <div class="w-full md:h-2/3 flex-grow min-h-0 flex items-center justify-center bg-white rounded-lg shadow-xl p-4 overflow-hidden relative">
                 <div class="w-full h-full relative">
-                    <div class="baseball-diamond absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M 50 10 L 90 50 L 50 90 L 10 50 Z" fill="#689f38" stroke="#a5d6a7" stroke-width="1"/>
-                            <path d="M 50 90 L 90 50 L 50 10 L 10 50 Z" fill="none" stroke="#d2b48c" stroke-width="2"/>
-                            <circle cx="50" cy="50" r="8" fill="#d2b48c" opacity="0.6"/>
-                        </svg>
-                        <div id="home-plate" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 10 10 L 90 10 L 90 50 L 50 90 L 10 50 Z"/></svg><span class="base-label">Home</span><span class="base-runner-name"></span></div>
-                        <div id="first-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">First</span><span class="base-runner-name"></span></div>
-                        <div id="second-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">Second</span><span class="base-runner-name"></span></div>
-                        <div id="third-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">Third</span><span class="base-runner-name"></span></div>
+                    <!-- Added aspect-square md:aspect-auto to wrapper -->
+                    <div class="w-full aspect-square md:aspect-auto md:h-full relative">
+                        <div class="baseball-diamond absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M 50 10 L 90 50 L 50 90 L 10 50 Z" fill="#689f38" stroke="#a5d6a7" stroke-width="1"/>
+                                <path d="M 50 90 L 90 50 L 50 10 L 10 50 Z" fill="none" stroke="#d2b48c" stroke-width="2"/>
+                                <circle cx="50" cy="50" r="8" fill="#d2b48c" opacity="0.6"/>
+                            </svg>
+                            <div id="home-plate" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 10 10 L 90 10 L 90 50 L 50 90 L 10 50 Z"/></svg><span class="base-label">Home</span><span class="base-runner-name"></span></div>
+                            <div id="first-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">First</span><span class="base-runner-name"></span></div>
+                            <div id="second-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">Second</span><span class="base-runner-name"></span></div>
+                            <div id="third-base" class="base"><svg viewBox="0 0 100 100" class="base-icon" fill="#e0e0e0"><path d="M 50 0 L 100 50 L 50 100 L 0 50 Z"/></svg><span class="base-label">Third</span><span class="base-runner-name"></span></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1941,7 +1946,7 @@ function setupBaseActions() {
         }
 
         document.addEventListener('DOMContentLoaded', init);
-        console.log("Version 5 loaded.");
+        console.log("Version 2 loaded.");
     </script>
 </body>
 </html>
