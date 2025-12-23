@@ -32,19 +32,22 @@
         .baseball-diamond {
             width: 85%;
             margin: 0 auto;
-            aspect-ratio: 1 / 1;
+            /* Removed aspect-ratio: 1/1 to prevent compression issues */
+            /* Let height be determined by width or use padding hack if needed, 
+               but for responsive SVG, width + auto height usually works best 
+               or let flex container handle it. */
+            height: 100%; /* Ensure it takes available height */
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        /* Mobile specific sizing (<700px) */
-        @media (max-width: 700px) {
-            .baseball-diamond {
-                width: 60vmax;
-                max-width: 100%; /* Prevent horizontal overflow */
-            }
-        }
+        
         .baseball-diamond svg {
             width: 100%;
             height: 100%;
+            max-height: 100%; /* Ensure SVG scales down if height is limiting factor */
+            max-width: 100%;
         }
         .base {
             position: absolute;
@@ -92,13 +95,13 @@
         }
 
         /* --- FINAL BASE POSITIONS --- */
-        #home-plate { bottom: 5%; left: 42.5%; }
+        #home-plate { bottom: 18%; left: 43.75%; }
         #home-plate .base-label { bottom: -25px; }
-        #first-base { bottom: 42.5%; right: 6.75%; }
+        #first-base { bottom: 43.75%; right: 6.75%; }
         #first-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
-        #second-base { top: 7.5%; left: 42.5%; } 
+        #second-base { top: 19%; left: 43.75%; } 
         #second-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
-        #third-base { bottom: 42.5%; left: 6.75%; }
+        #third-base { bottom: 43.75%; left: 6.75%; }
         #third-base .base-label { bottom: -20px; left: 50%; transform: translateX(-50%); }
 
         .prevent-select {
@@ -1209,6 +1212,7 @@
             const num = player.number ? `(${player.number})` : '';
             const pos = player.position ? `${player.position} - ` : '';
             
+            // Layout: LC - Jarred (15) - Gender removed
             card.innerHTML = `
                 <span class="font-medium text-sm text-gray-800">${pos}${player.name} ${num}</span>
             `;
@@ -1683,29 +1687,7 @@ function setupBaseActions() {
                 });
             });
         }
-        // --- Base click handlers ---
-        function setupBaseClickListeners() {
-            Object.keys(DOMElements.bases).forEach(baseNumStr => {
-                const baseNum = parseInt(baseNumStr, 10);
-                DOMElements.bases[baseNum].addEventListener('click', () => {
-                    const runner = gameState.bases[baseNum];
-                    if (runner) {
-                        // Runner is present, show context menu
-                        DOMElements.baseContextModal1.dataset.baseNum = baseNum;
-                        DOMElements.baseContextModal2.dataset.baseNum = baseNum;
-                        DOMElements.baseContextModal3.dataset.baseNum = baseNum;
-                        
-                        // Show the correct modal for the base
-                        if(baseNum === 1) showModal(DOMElements.baseContextModal1);
-                        else if(baseNum === 2) showModal(DOMElements.baseContextModal2);
-                        else if(baseNum === 3) showModal(DOMElements.baseContextModal3);
-                    }
-                    // If base is empty, do nothing
-                });
-            });
-        }
         
-        // --- RUNNER NUMBERING FIX ---
         function renumberRunnersOnBase(outRunnerDisplayOrder) {
             // Get all runners on base
             const runnersOnBase = [];
@@ -1729,9 +1711,7 @@ function setupBaseActions() {
             
             updateBases(); // Update UI with new numbers
         }
-        // --- END RUNNER NUMBERING FIX ---
 
-        // --- RESTORED initAuth FUNCTION ---
         async function initAuth() {
             try {
                 // Initialize Firebase
@@ -1948,7 +1928,7 @@ function setupBaseActions() {
         }
 
         document.addEventListener('DOMContentLoaded', init);
-        console.log("Version 5 loaded.");
+        console.log("Version 2 loaded.");
     </script>
 </body>
 </html>
