@@ -29,26 +29,19 @@
         .invalid-order {
             border: 2px dashed #ef4444 !important;
         }
-        
-        /* --- DIAMOND SIZING --- */
         .baseball-diamond {
-            /* Mobile / Default Size */
             width: 85%;
-            height: 85%; 
             margin: 0 auto;
             aspect-ratio: 1 / 1;
             position: relative;
         }
-
-        /* Desktop / Tablet Size (Screens smaller than 768px) */
-        @media (max-width: 1000px) {
+        /* Mobile specific sizing (<700px) */
+        @media (max-width: 700px) {
             .baseball-diamond {
-                width: 85%; /* Change this value to resize ONLY desktop */
-                max-width: 500px; /* Prevents it from getting massive on huge screens */
+                width: 60vmax;
+                max-width: 100%; /* Prevent horizontal overflow */
             }
         }
-        /* ---------------------- */
-
         .baseball-diamond svg {
             width: 100%;
             height: 100%;
@@ -1496,7 +1489,6 @@
         }
 
         // --- Drag and Drop Handlers ---
-      
 
         function setupDragAndDrop() {
             const lists = [
@@ -1956,7 +1948,7 @@ function setupBaseActions() {
         }
 
         document.addEventListener('DOMContentLoaded', init);
-        console.log("Version 2 loaded.");
+        console.log("Version 5 loaded.");
     </script>
 </body>
 </html>
